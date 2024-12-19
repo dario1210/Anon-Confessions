@@ -1,0 +1,5 @@
+/vendor
+.env
+.vscode
+todo.todo
+test.db
