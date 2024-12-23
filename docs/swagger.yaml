@@ -1,0 +1,53 @@
+basePath: /api/v1
+definitions:
+  posts.Post:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+host: localhost:9000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support Team
+    url: http://www.swagger.io/support
+  description: |-
+    A privacy-focused backend service that allows users to:
+    • Post and manage anonymous confessions.
+    • React to posts with likes or dislikes.
+    • Leave comments on confessions.
+    • Receive real-time updates through WebSocket.
+
+    The API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Anonymous Confessions API
+  version: "1.0"
+paths:
+  /posts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all posts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/posts.Post'
+            type: array
+      summary: Get all posts
+      tags:
+      - posts
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
