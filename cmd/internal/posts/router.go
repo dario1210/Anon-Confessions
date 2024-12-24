@@ -1,14 +1,17 @@
 package posts
 
 import (
+	"anon-confessions/cmd/internal/middleware"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // RegisterPostRoutes registers all routes related to posts.
-func RegisterPostRoutes(router *gin.RouterGroup) {
+func RegisterPostRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	postGroup := router.Group("/posts")
 	{
-		postGroup.GET("/", HandlePosts)
+		postGroup.GET("/", middleware.Authentication(db), HandlePosts)
 		postGroup.POST("/", createPostHandler)
 	}
 }
