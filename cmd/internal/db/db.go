@@ -1,7 +1,11 @@
 package db
 
 import (
+	"anon-confessions/cmd/internal/config"
+	"context"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -14,31 +18,45 @@ import (
 func DbConnection(dbName string) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to get raw database connection: %w", err)
 	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get *sql.DB from gorm.DB: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := sqlDB.PingContext(ctx); err != nil {
+		return nil, fmt.Errorf("database ping failed: %w", err)
+	}
+
+	// Configure the connection pool.
+	sqlDB.SetMaxOpenConns(10)               // Limit max open connections
+	sqlDB.SetMaxIdleConns(5)                // Limit idle connections
+	sqlDB.SetConnMaxLifetime(1 * time.Hour) // Set connection lifetime
 
 	return db, nil
 }
 
 // RunMigrations runs the migrations using golang-migrate.
-// TODO: MAKE DBURL AND MIGRATIONSPATH BE READ FROM ENV, MAKE DB URL RELATIVE PATH.
-func RunMigrations() {
-	// Path to migrations folder
-	migrationsPath := "file://cmd/internal/db/migrations"
-	// SQLite database connection URL
-	databaseURL := "sqlite3://C:/Users/User/Desktop/Anon-Repository/test.db"
+func RunMigrations(cfg *config.Migrations) error {
+	if cfg == nil {
+		return fmt.Errorf("invalid migration configuration: config is nil")
+	}
 
-	// Initialize migrate
-	m, err := migrate.New(migrationsPath, databaseURL)
+	// Initialize migratations
+	m, err := migrate.New(cfg.MigrationPath, cfg.DBURL)
 	if err != nil {
-		log.Fatalf("Failed to create migrate instance: %v", err)
+		return fmt.Errorf("err: %w", err)
 	}
 
 	// Run migrations
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("Failed to apply migrations: %v", err)
+		return fmt.Errorf("err: %w", err)
 	}
 
 	log.Println("Migrations applied successfully!")
+	return nil
 }
