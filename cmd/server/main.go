@@ -1,7 +1,5 @@
 package main
 
-// https://www.reddit.com/r/golang/comments/1dzxah6/add_env_to_go_backend/
-
 import (
 	"anon-confessions/cmd/internal/app"
 	"log"
