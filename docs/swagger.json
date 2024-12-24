@@ -3,12 +3,7 @@
     "info": {
         "description": "A privacy-focused backend service that allows users to:\n• Post and manage anonymous confessions.\n• React to posts with likes or dislikes.\n• Leave comments on confessions.\n• Receive real-time updates through WebSocket.\n\nThe API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.",
         "title": "Anonymous Confessions API",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "API Support Team",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
+        "contact": {},
         "license": {
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -43,6 +38,29 @@
                     }
                 }
             }
+        },
+        "/users/register": {
+            "post": {
+                "description": "Generate a new 16-digit anonymous account number and return it.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Create a new user account",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.UserResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -59,11 +77,22 @@
                     "type": "string"
                 }
             }
+        },
+        "user.UserResponse": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                }
+            }
         }
     },
     "securityDefinitions": {
-        "BasicAuth": {
-            "type": "basic"
+        "AccountNumberAuth": {
+            "description": "A unique account number for user authentication.",
+            "type": "apiKey",
+            "name": "X-Account-Number",
+            "in": "header"
         }
     }
 }

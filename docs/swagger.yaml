@@ -9,12 +9,14 @@ definitions:
       title:
         type: string
     type: object
+  user.UserResponse:
+    properties:
+      accountNumber:
+        type: string
+    type: object
 host: localhost:9000
 info:
-  contact:
-    email: support@swagger.io
-    name: API Support Team
-    url: http://www.swagger.io/support
+  contact: {}
   description: |-
     A privacy-focused backend service that allows users to:
     • Post and manage anonymous confessions.
@@ -26,7 +28,6 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
   title: Anonymous Confessions API
   version: "1.0"
 paths:
@@ -47,7 +48,25 @@ paths:
       summary: Get all posts
       tags:
       - posts
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Generate a new 16-digit anonymous account number and return it.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.UserResponse'
+      summary: Create a new user account
+      tags:
+      - users
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  AccountNumberAuth:
+    description: A unique account number for user authentication.
+    in: header
+    name: X-Account-Number
+    type: apiKey
 swagger: "2.0"
