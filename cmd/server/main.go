@@ -11,7 +11,7 @@ import (
 // @version         1.0
 // @description     A privacy-focused backend service that allows users to:
 // @description     • Post and manage anonymous confessions.
-// @description     • React to posts with likes or dislikes.
+// @description     • React to posts with likes and comments.
 // @description     • Leave comments on confessions.
 // @description     • Receive real-time updates through WebSocket.
 // @description

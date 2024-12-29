@@ -46,7 +46,7 @@ func Authentication(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		log.Printf("User authenticated successfully.")
-		c.Set("user", authenticatedUser)
+		c.Set("userID", authenticatedUser.ID)
 		c.Next()
 	}
 }

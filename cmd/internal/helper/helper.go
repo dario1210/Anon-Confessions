@@ -8,7 +8,10 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"net/http"
+	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -42,4 +45,44 @@ func HashAccountNumber(accountNumber string) string {
 // It returns nil on success, or an error on failure.
 func CompareHashAndPassword(hashedPassword, password []byte) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
+
+type SuccessMessage struct {
+	Message string `json:"msg"`
+}
+
+type ErrorMessage struct {
+	Message string `json:"error"`
+}
+
+// RetrieveLoggedInUserId retrieves the logged-in user's ID from the Gin context.
+// If the user ID is not found in the context or is of an invalid type,
+// the function immediately aborts the HTTP request with an appropriate unauthorized error response.
+func RetrieveLoggedInUserId(c *gin.Context) int {
+	userID, exists := c.Get("userID")
+
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorMessage{Message: "Authentication failed."})
+		return 0
+	}
+
+	intUserId, ok := userID.(int)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorMessage{Message: "Invalid user ID format."})
+		return 0
+	}
+
+	return intUserId
+}
+
+// ParseIDParam retrieves the parameter specified from the route parameter as an integer.
+// If the format is invalid, it aborts the HTTP request with a 400 Bad Request status.
+func ParseIDParam(c *gin.Context, param string) int {
+	id := c.Param(param)
+	intID, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, ErrorMessage{Message: "Invalid ID format."})
+		return 0
+	}
+	return intID
 }
