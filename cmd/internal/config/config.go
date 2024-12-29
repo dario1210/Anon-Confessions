@@ -24,9 +24,6 @@ type Config struct {
 // LoadConfig loads the application configuration from environment variables.
 // It initializes default values for configuration parameters if they are not
 // present in the environment.
-//
-// Returns:
-// - *Config: A pointer to the populated Config struct.
 func LoadConfig() *Config {
 	cfg := &Config{
 		Port: getEnv("PORT", "9000"),

@@ -5,6 +5,7 @@ import (
 )
 
 type Users struct {
+	ID            int
 	AccountNumber string
 	CreatedAt     time.Time
 }

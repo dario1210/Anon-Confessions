@@ -6,10 +6,10 @@ import (
 )
 
 // RegisterUserRoutes registers all routes related to posts.
-func RegisterUsersRoutes(router *gin.RouterGroup, userHanlder *UserHandler, db *gorm.DB) {
+func RegisterUsersRoutes(router *gin.RouterGroup, userHandler *UserHandler, db *gorm.DB) {
 	userGroup := router.Group("/users")
 	{
-		userGroup.POST("/register", userHanlder.handleUserAccountCreation)
+		userGroup.POST("/register", userHandler.handleUserAccountCreation)
 	}
 }
 
