@@ -1,6 +1,7 @@
 package app
 
 import (
+	"anon-confessions/cmd/internal/comments"
 	"anon-confessions/cmd/internal/config"
 	"anon-confessions/cmd/internal/db"
 	"anon-confessions/cmd/internal/posts"
@@ -22,8 +23,9 @@ type App struct {
 }
 
 type HandlerContainer struct {
-	UserHandler *user.UserHandler
-	// PostHandler  *post.PostHandler
+	UserHandler     *user.UserHandler
+	PostsHandler    *posts.PostsHandler
+	CommentsHandler *comments.CommentsHandler
 }
 
 func NewApp() (*App, error) {
@@ -41,15 +43,23 @@ func NewApp() (*App, error) {
 
 	// Repositories
 	userRepo := user.NewSQLiteUserRepository(dbConn)
+	postsRepo := posts.NewSQLitePostsRepository(dbConn)
+	commentsRepo := comments.NewSQLiteCommentsRepository(dbConn)
 
-	// SERVICES
+	// Services
 	userService := user.NewUserService(userRepo)
+	postsService := posts.NewPostsService(postsRepo)
+	commentsService := comments.NewCommentsService(commentsRepo)
 
-	// HANDLERS
+	// Handlers
 	userHandler := user.NewUserHandler(userService)
+	postsHandler := posts.NewPostsHandler(postsService)
+	commentsHandler := comments.NewCommentsHandler(commentsService, postsService)
 
 	handlers := &HandlerContainer{
-		UserHandler: userHandler,
+		UserHandler:     userHandler,
+		PostsHandler:    postsHandler,
+		CommentsHandler: commentsHandler,
 	}
 	router := setupRouter(handlers, dbConn)
 
@@ -79,8 +89,9 @@ func setupRouter(h *HandlerContainer, db *gorm.DB) *gin.Engine {
 
 	api := router.Group("/api/v1")
 	{
-		posts.RegisterPostRoutes(api, db)
+		posts.RegisterPostRoutes(api, h.PostsHandler, db)
 		user.RegisterUsersRoutes(api, h.UserHandler, db)
+		comments.RegisterCommentsRoutes(api, h.CommentsHandler, db)
 	}
 
 	return router
