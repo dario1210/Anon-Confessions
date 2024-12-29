@@ -54,8 +54,8 @@ func (h *PostsHandler) GetPost(c *gin.Context) {
 
 func (h *PostsHandler) GetPostsCollectionHandler(c *gin.Context) {
 	ctx := c.Request.Context()
-
-	post, err := h.postsService.GetPostsCollection(ctx)
+	userId := helper.RetrieveLoggedInUserId(c)
+	post, err := h.postsService.GetPostsCollection(ctx, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to retireve posts."})
 		return

@@ -32,6 +32,7 @@ type GetPost struct {
 	Content    string    `json:"content"`
 	CreatedAt  time.Time `json:"createdAt"`
 	TotalLikes int       `json:"totalLikes"`
+	IsLiked    int       `json:"isLiked"`
 }
 
 type GetPostsCollection []GetPost

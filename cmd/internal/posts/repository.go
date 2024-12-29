@@ -13,7 +13,7 @@ import (
 type PostsRepository interface {
 	CreatePosts(context.Context, models.PostDBModel) error
 	GetPost(context.Context, int) (*models.GetPostWithComments, error)
-	GetPostsCollection(context.Context) (*models.GetPostsCollection, error)
+	GetPostsCollection(context.Context, int) (*models.GetPostsCollection, error)
 	UpdatePosts(context.Context, int, int, models.PostRequest) (int64, error)
 	DeletePost(int, int) (int64, error)
 	UpdateLikes(context.Context, int, int, int) (int64, error)
@@ -48,10 +48,20 @@ func (repo *SQLitePostsRepository) GetPost(ctx context.Context, id int) (*models
 	return &post, nil
 }
 
-func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context) (*models.GetPostsCollection, error) {
+func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context, userId int) (*models.GetPostsCollection, error) {
 	var postCollection models.GetPostsCollection
 
-	result := repo.db.WithContext(ctx).Find(&postCollection)
+	result := repo.db.WithContext(ctx).
+		Model(&models.PostDBModel{}).
+		Select(`
+			posts.id,
+			posts.content,
+			posts.created_at,
+			posts.total_likes,
+        	posts_likes.user_id IS NOT NULL AS IsLiked
+		`).
+		Joins("LEFT JOIN posts_likes ON posts.id = posts_likes.post_id AND posts_likes.user_id = ?", userId).
+		Scan(&postCollection)
 
 	if result.Error != nil {
 		log.Println(result.Error)
