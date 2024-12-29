@@ -1,4 +1,5 @@
 CREATE TABLE users (
-    account_number TEXT NOT NULL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_number TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
