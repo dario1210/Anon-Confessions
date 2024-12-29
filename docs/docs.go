@@ -21,7 +21,7 @@ const docTemplate = `{
     "paths": {
         "/posts": {
             "get": {
-                "description": "Retrieve a list of all posts",
+                "description": "Fetches a collection of posts. Requires authentication using X-Account-Number.",
                 "consumes": [
                     "application/json"
                 ],
@@ -31,15 +31,586 @@ const docTemplate = `{
                 "tags": [
                     "posts"
                 ],
-                "summary": "Get all posts",
+                "summary": "Retrieve a collection of posts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "{} if no posts are found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve posts",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Allows authenticated users to create a new post using their X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Create a new post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Post content",
+                        "name": "post",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/posts.PostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Post created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/helper.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or missing X-Account-Number",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}": {
+            "get": {
+                "description": "Fetches a post using its unique ID. Requires authentication using X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Retrieve a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/posts.GetPost"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid post ID",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or missing X-Account-Number",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve post",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a post using its unique ID. Requires the user to be logged in and authenticated using X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Delete a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/helper.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid post ID",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized user or missing X-Account-Number",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete post",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates a post's content. Requires the user to be authenticated using X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Update a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Post content",
+                        "name": "post",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/posts.PostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/helper.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or parameters",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found or no updates applied",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update post",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}/comments": {
+            "get": {
+                "description": "Fetches all comments associated with a specific post ID. Requires authentication using X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Retrieve comments for a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comments retrieved successfully",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/posts.Post"
+                                "$ref": "#/definitions/comments.Comments"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve comments",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Allows authenticated users to add a comment to a specific post. Requires authentication using X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Create a comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Comment content",
+                        "name": "comment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/comments.CreateCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Comment created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/helper.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or missing X-Account-Number",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}/comments/{commentId}": {
+            "delete": {
+                "description": "Deletes a specific comment from a post. The user must be authenticated and authorized to delete the comment.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Delete a comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Comment ID",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comment deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/helper.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid post ID or comment ID",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found or comment not found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete comment",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates the content of a specific comment in a post. Requires authentication using X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Update a comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Comment ID",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated comment content",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/comments.CreateCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comment updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/helper.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or input",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or missing X-Account-Number",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Post or comment not found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update comment",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}/likes": {
+            "patch": {
+                "description": "Updates the like status of a post. Requires the user to be authenticated using X-Account-Number.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Like or Unlike a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "16-digit account number (e.g., 1234567890123456)",
+                        "name": "X-Account-Number",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Action to like or unlike the post",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/posts.UpdateLikesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Action applied successfully",
+                        "schema": {
+                            "$ref": "#/definitions/helper.SuccessMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or parameters",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found or action not applied",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to apply action on the post",
+                        "schema": {
+                            "$ref": "#/definitions/helper.ErrorMessage"
                         }
                     }
                 }
@@ -70,17 +641,86 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "posts.Post": {
+        "comments.Comments": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "string"
                 },
+                "createdAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "comments.CreateCommentRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            }
+        },
+        "helper.ErrorMessage": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "helper.SuccessMessage": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "posts.GetPost": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
-                "title": {
-                    "type": "string"
+                "totalLikes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "posts.PostRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            }
+        },
+        "posts.UpdateLikesRequest": {
+            "type": "object",
+            "required": [
+                "action"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "Like",
+                        "Unlike"
+                    ]
                 }
             }
         },
@@ -110,7 +750,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Anonymous Confessions API",
-	Description:      "A privacy-focused backend service that allows users to:\n• Post and manage anonymous confessions.\n• React to posts with likes or dislikes.\n• Leave comments on confessions.\n• Receive real-time updates through WebSocket.\n\nThe API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.",
+	Description:      "A privacy-focused backend service that allows users to:\n• Post and manage anonymous confessions.\n• React to posts with likes and comments.\n• Leave comments on confessions.\n• Receive real-time updates through WebSocket.\n\nThe API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

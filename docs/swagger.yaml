@@ -1,13 +1,58 @@
 basePath: /api/v1
 definitions:
-  posts.Post:
+  comments.Comments:
     properties:
       content:
         type: string
+      createdAt:
+        type: string
+    type: object
+  comments.CreateCommentRequest:
+    properties:
+      content:
+        minLength: 2
+        type: string
+    required:
+    - content
+    type: object
+  helper.ErrorMessage:
+    properties:
+      error:
+        type: string
+    type: object
+  helper.SuccessMessage:
+    properties:
+      msg:
+        type: string
+    type: object
+  posts.GetPost:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
       id:
         type: integer
-      title:
+      totalLikes:
+        type: integer
+    type: object
+  posts.PostRequest:
+    properties:
+      content:
+        minLength: 2
         type: string
+    required:
+    - content
+    type: object
+  posts.UpdateLikesRequest:
+    properties:
+      action:
+        enum:
+        - Like
+        - Unlike
+        type: string
+    required:
+    - action
     type: object
   user.UserResponse:
     properties:
@@ -20,7 +65,7 @@ info:
   description: |-
     A privacy-focused backend service that allows users to:
     • Post and manage anonymous confessions.
-    • React to posts with likes or dislikes.
+    • React to posts with likes and comments.
     • Leave comments on confessions.
     • Receive real-time updates through WebSocket.
 
@@ -35,17 +80,408 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieve a list of all posts
+      description: Fetches a collection of posts. Requires authentication using X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: '{} if no posts are found'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to retrieve posts
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Retrieve a collection of posts
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Allows authenticated users to create a new post using their X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post content
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/posts.PostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Post created successfully
+          schema:
+            $ref: '#/definitions/helper.SuccessMessage'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "401":
+          description: Invalid or missing X-Account-Number
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Create a new post
+      tags:
+      - posts
+  /posts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a post using its unique ID. Requires the user to be logged
+        in and authenticated using X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post deleted successfully
+          schema:
+            $ref: '#/definitions/helper.SuccessMessage'
+        "400":
+          description: Invalid post ID
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "401":
+          description: Unauthorized user or missing X-Account-Number
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Failed to delete post
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Delete a post
+      tags:
+      - posts
+    get:
+      consumes:
+      - application/json
+      description: Fetches a post using its unique ID. Requires authentication using
+        X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post retrieved successfully
+          schema:
+            $ref: '#/definitions/posts.GetPost'
+        "400":
+          description: Invalid post ID
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "401":
+          description: Invalid or missing X-Account-Number
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Failed to retrieve post
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Retrieve a post
+      tags:
+      - posts
+    patch:
+      consumes:
+      - application/json
+      description: Updates a post's content. Requires the user to be authenticated
+        using X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Post content
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/posts.PostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated successfully
+          schema:
+            $ref: '#/definitions/helper.SuccessMessage'
+        "400":
+          description: Invalid request body or parameters
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "404":
+          description: Post not found or no updates applied
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Failed to update post
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Update a post
+      tags:
+      - posts
+  /posts/{id}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all comments associated with a specific post ID. Requires
+        authentication using X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comments retrieved successfully
           schema:
             items:
-              $ref: '#/definitions/posts.Post'
+              $ref: '#/definitions/comments.Comments'
             type: array
-      summary: Get all posts
+        "500":
+          description: Failed to retrieve comments
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Retrieve comments for a post
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Allows authenticated users to add a comment to a specific post.
+        Requires authentication using X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment content
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/comments.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Comment created successfully
+          schema:
+            $ref: '#/definitions/helper.SuccessMessage'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "401":
+          description: Invalid or missing X-Account-Number
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Create a comment
+      tags:
+      - comments
+  /posts/{id}/comments/{commentId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific comment from a post. The user must be authenticated
+        and authorized to delete the comment.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comment deleted successfully
+          schema:
+            $ref: '#/definitions/helper.SuccessMessage'
+        "400":
+          description: Invalid post ID or comment ID
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "404":
+          description: Post not found or comment not found
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Failed to delete comment
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Delete a comment
+      tags:
+      - comments
+    patch:
+      consumes:
+      - application/json
+      description: Updates the content of a specific comment in a post. Requires authentication
+        using X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: integer
+      - description: Updated comment content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/comments.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comment updated successfully
+          schema:
+            $ref: '#/definitions/helper.SuccessMessage'
+        "400":
+          description: Invalid request body or input
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "401":
+          description: Invalid or missing X-Account-Number
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "404":
+          description: Post or comment not found
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Failed to update comment
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Update a comment
+      tags:
+      - comments
+  /posts/{id}/likes:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the like status of a post. Requires the user to be authenticated
+        using X-Account-Number.
+      parameters:
+      - description: 16-digit account number (e.g., 1234567890123456)
+        in: header
+        name: X-Account-Number
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Action to like or unlike the post
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/posts.UpdateLikesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Action applied successfully
+          schema:
+            $ref: '#/definitions/helper.SuccessMessage'
+        "400":
+          description: Invalid request body or parameters
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "404":
+          description: Post not found or action not applied
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+        "500":
+          description: Failed to apply action on the post
+          schema:
+            $ref: '#/definitions/helper.ErrorMessage'
+      summary: Like or Unlike a post
       tags:
       - posts
   /users/register:
