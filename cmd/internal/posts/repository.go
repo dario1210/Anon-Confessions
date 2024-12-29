@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"anon-confessions/cmd/internal/models"
 	"context"
 	"log"
 
@@ -10,10 +11,10 @@ import (
 //! TODO: FIX ALL THE LOGGING AND RESPONSE HANDLING.
 
 type PostsRepository interface {
-	CreatePosts(context.Context, PostDBModel) error
-	GetPost(context.Context, int) (*GetPost, error)
-	GetPostsCollection(context.Context) (*GetPostsCollection, error)
-	UpdatePosts(context.Context, int, int, PostRequest) (int64, error)
+	CreatePosts(context.Context, models.PostDBModel) error
+	GetPost(context.Context, int) (*models.GetPostWithComments, error)
+	GetPostsCollection(context.Context) (*models.GetPostsCollection, error)
+	UpdatePosts(context.Context, int, int, models.PostRequest) (int64, error)
 	DeletePost(int, int) (int64, error)
 	UpdateLikes(context.Context, int, int, int) (int64, error)
 }
@@ -26,7 +27,7 @@ func NewSQLitePostsRepository(db *gorm.DB) *SQLitePostsRepository {
 	return &SQLitePostsRepository{db: db}
 }
 
-func (repo *SQLitePostsRepository) CreatePosts(ctx context.Context, post PostDBModel) error {
+func (repo *SQLitePostsRepository) CreatePosts(ctx context.Context, post models.PostDBModel) error {
 	result := repo.db.WithContext(ctx).Create(&post)
 
 	if result.Error != nil {
@@ -36,19 +37,19 @@ func (repo *SQLitePostsRepository) CreatePosts(ctx context.Context, post PostDBM
 	return nil
 }
 
-func (repo *SQLitePostsRepository) GetPost(ctx context.Context, id int) (*GetPost, error) {
-	var post GetPost
-	result := repo.db.WithContext(ctx).First(&post, id)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return nil, result.Error
+func (repo *SQLitePostsRepository) GetPost(ctx context.Context, id int) (*models.GetPostWithComments, error) {
+	var post models.GetPostWithComments
+	err := repo.db.Preload("Comments").First(&post, id).Error
+	if err != nil {
+		log.Println(err)
+		return nil, err
 	}
 
 	return &post, nil
 }
 
-func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context) (*GetPostsCollection, error) {
-	var postCollection GetPostsCollection
+func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context) (*models.GetPostsCollection, error) {
+	var postCollection models.GetPostsCollection
 
 	result := repo.db.WithContext(ctx).Find(&postCollection)
 
@@ -64,8 +65,8 @@ func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context) (*Get
 	return &postCollection, nil
 }
 
-func (repo *SQLitePostsRepository) UpdatePosts(ctx context.Context, id int, userId int, post PostRequest) (int64, error) {
-	result := repo.db.WithContext(ctx).Model(&PostDBModel{}).Where("id = ? AND user_id = ?", id, userId).Update("content", post.Content)
+func (repo *SQLitePostsRepository) UpdatePosts(ctx context.Context, id int, userId int, post models.PostRequest) (int64, error) {
+	result := repo.db.WithContext(ctx).Model(&models.PostDBModel{}).Where("id = ? AND user_id = ?", id, userId).Update("content", post.Content)
 
 	if result.Error != nil {
 		return -1, result.Error
@@ -75,7 +76,7 @@ func (repo *SQLitePostsRepository) UpdatePosts(ctx context.Context, id int, user
 }
 
 func (repo *SQLitePostsRepository) DeletePost(id, userId int) (int64, error) {
-	result := repo.db.Where("id = ? AND user_id = ?", id, userId).Delete(&PostDBModel{})
+	result := repo.db.Where("id = ? AND user_id = ?", id, userId).Delete(&models.PostDBModel{})
 
 	if result.Error != nil {
 		return -1, result.Error
@@ -92,7 +93,7 @@ func (repo *SQLitePostsRepository) UpdateLikes(ctx context.Context, postId, user
 	var rowsAffected int64
 
 	err := repo.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&PostDBModel{}).
+		if err := tx.Model(&models.PostDBModel{}).
 			Where("id = ? AND user_id = ?", postId, userId).
 			Update("total_likes", gorm.Expr("total_likes + ?", sign)).Error; err != nil {
 			return err
@@ -114,7 +115,7 @@ func (repo *SQLitePostsRepository) UpdateLikes(ctx context.Context, postId, user
 		} else {
 			// For the delete operation, raw SQL is not required because the `Delete` method,
 			// it will return `rowsAffected` as 0 if no matching record exists,
-			result := tx.Where("post_id = ? AND user_id = ?", postId, userId).Delete(&PostsLikesDBModel{})
+			result := tx.Where("post_id = ? AND user_id = ?", postId, userId).Delete(&models.PostsLikesDBModel{})
 			if result.Error != nil {
 				return result.Error
 			}

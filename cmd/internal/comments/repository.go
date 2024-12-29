@@ -1,6 +1,7 @@
 package comments
 
 import (
+	"anon-confessions/cmd/internal/models"
 	"context"
 	"log"
 
@@ -8,9 +9,9 @@ import (
 )
 
 type CommentsRepository interface {
-	CreateComments(context.Context, CommentsDbModel) error
-	GetCommentsCollection(context.Context, int) (*GetCommentsCollection, error)
-	UpdateComments(context.Context, int, int, int, CreateCommentRequest) (int64, error)
+	CreateComments(context.Context, models.CommentsDbModel) error
+	GetCommentsCollection(context.Context, int) (*models.GetCommentsCollection, error)
+	UpdateComments(context.Context, int, int, int, models.CreateCommentRequest) (int64, error)
 	DeleteComments(context.Context, int, int, int) (int64, error)
 }
 
@@ -22,7 +23,7 @@ func NewSQLiteCommentsRepository(db *gorm.DB) *SQLiteCommentsRepository {
 	return &SQLiteCommentsRepository{db: db}
 }
 
-func (repo *SQLiteCommentsRepository) CreateComments(ctx context.Context, commentsDbModel CommentsDbModel) error {
+func (repo *SQLiteCommentsRepository) CreateComments(ctx context.Context, commentsDbModel models.CommentsDbModel) error {
 	result := repo.db.WithContext(ctx).Create(&commentsDbModel)
 
 	if result.Error != nil {
@@ -32,8 +33,8 @@ func (repo *SQLiteCommentsRepository) CreateComments(ctx context.Context, commen
 	return nil
 }
 
-func (repo *SQLiteCommentsRepository) GetCommentsCollection(ctx context.Context, postId int) (*GetCommentsCollection, error) {
-	var commentsCollection GetCommentsCollection
+func (repo *SQLiteCommentsRepository) GetCommentsCollection(ctx context.Context, postId int) (*models.GetCommentsCollection, error) {
+	var commentsCollection models.GetCommentsCollection
 
 	result := repo.db.WithContext(ctx).Where("post_id = ?", postId).Find(&commentsCollection)
 
@@ -49,8 +50,8 @@ func (repo *SQLiteCommentsRepository) GetCommentsCollection(ctx context.Context,
 	return &commentsCollection, nil
 }
 
-func (repo *SQLiteCommentsRepository) UpdateComments(ctx context.Context, commentId, postId, userId int, comment CreateCommentRequest) (int64, error) {
-	result := repo.db.WithContext(ctx).Model(&CommentsDbModel{}).Where("id = ? AND post_id = ? AND user_id = ?", commentId, postId, userId).Update("content", comment.Content)
+func (repo *SQLiteCommentsRepository) UpdateComments(ctx context.Context, commentId, postId, userId int, comment models.CreateCommentRequest) (int64, error) {
+	result := repo.db.WithContext(ctx).Model(&models.CommentsDbModel{}).Where("id = ? AND post_id = ? AND user_id = ?", commentId, postId, userId).Update("content", comment.Content)
 
 	if result.Error != nil {
 		return -1, result.Error
@@ -60,7 +61,7 @@ func (repo *SQLiteCommentsRepository) UpdateComments(ctx context.Context, commen
 }
 
 func (repo *SQLiteCommentsRepository) DeleteComments(ctx context.Context, postId, userId, commentId int) (int64, error) {
-	result := repo.db.Where("post_id = ? AND user_id = ? AND id = ?", postId, userId, commentId).Delete(&CommentsDbModel{})
+	result := repo.db.Where("post_id = ? AND user_id = ? AND id = ?", postId, userId, commentId).Delete(&models.CommentsDbModel{})
 
 	if result.Error != nil {
 		return -1, result.Error

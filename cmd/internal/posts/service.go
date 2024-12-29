@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"anon-confessions/cmd/internal/models"
 	"context"
 	"fmt"
 	"log"
@@ -15,8 +16,8 @@ func NewPostsService(PostsRepo PostsRepository) *PostsService {
 	return &PostsService{PostsRepo: PostsRepo}
 }
 
-func (s *PostsService) CreatePosts(ctx context.Context, post PostRequest, userID int) error {
-	postDBModel := PostDBModel{
+func (s *PostsService) CreatePosts(ctx context.Context, post models.PostRequest, userID int) error {
+	postDBModel := models.PostDBModel{
 		Content:   post.Content,
 		CreatedAt: time.Now(),
 		UserId:    userID,
@@ -30,7 +31,7 @@ func (s *PostsService) CreatePosts(ctx context.Context, post PostRequest, userID
 	return nil
 }
 
-func (s *PostsService) GetPost(ctx context.Context, postID int) (*GetPost, error) {
+func (s *PostsService) GetPost(ctx context.Context, postID int) (*models.GetPostWithComments, error) {
 	post, err := s.PostsRepo.GetPost(ctx, postID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve post: %w", err)
@@ -39,7 +40,7 @@ func (s *PostsService) GetPost(ctx context.Context, postID int) (*GetPost, error
 	return post, nil
 }
 
-func (s *PostsService) GetPostsCollection(ctx context.Context) (*GetPostsCollection, error) {
+func (s *PostsService) GetPostsCollection(ctx context.Context) (*models.GetPostsCollection, error) {
 	postCollection, err := s.PostsRepo.GetPostsCollection(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve posts: %w", err)
@@ -57,7 +58,7 @@ func (s *PostsService) DeletePost(id int, userId int) (int64, error) {
 	return rowsAffected, nil
 }
 
-func (s *PostsService) UpdatePosts(ctx context.Context, postId, userId int, post PostRequest) (int64, error) {
+func (s *PostsService) UpdatePosts(ctx context.Context, postId, userId int, post models.PostRequest) (int64, error) {
 	rowsAffected, err := s.PostsRepo.UpdatePosts(ctx, postId, userId, post)
 	if err != nil {
 		return -1, fmt.Errorf("failed to update post: %w", err)
@@ -66,7 +67,7 @@ func (s *PostsService) UpdatePosts(ctx context.Context, postId, userId int, post
 	return rowsAffected, nil
 }
 
-func (s *PostsService) UpdateLikes(ctx context.Context, postId, userId int, postsLikes UpdateLikesRequest) (int64, error) {
+func (s *PostsService) UpdateLikes(ctx context.Context, postId, userId int, postsLikes models.UpdateLikesRequest) (int64, error) {
 	var value int
 
 	switch postsLikes.Action {

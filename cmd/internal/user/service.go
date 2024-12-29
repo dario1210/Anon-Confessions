@@ -2,6 +2,7 @@ package user
 
 import (
 	"anon-confessions/cmd/internal/helper"
+	"anon-confessions/cmd/internal/models"
 	"log"
 	"time"
 )
@@ -22,7 +23,7 @@ func (s *UserService) createUser() (string, error) {
 	}
 
 	hashedAccNumber := helper.HashAccountNumber(accNumber)
-	user := Users{
+	user := models.Users{
 		AccountNumber: hashedAccNumber,
 		CreatedAt:     time.Now(),
 	}

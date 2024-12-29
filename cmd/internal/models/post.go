@@ -1,13 +1,24 @@
-package posts
+package models
 
-import "time"
+import (
+	"time"
+)
 
 type PostDBModel struct {
-	ID         int       `json:"id"`
+	ID         int       `json:"id" gorm:"primaryKey;autoIncrement"`
+	Content    string    `json:"content" gorm:"type:text;not null"`
+	CreatedAt  time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UserId     int       `json:"user_id" gorm:"not null"`
+	TotalLikes int       `json:"total_likes" gorm:"default:0"`
+}
+
+type GetPostWithComments struct {
+	ID         int       `json:"id" gorm:"primaryKey"`
 	Content    string    `json:"content"`
-	CreatedAt  time.Time `json:"created_at"`
-	UserId     int       `json:"user_id"`
-	TotalLikes int       `json:"total_likes"`
+	CreatedAt  time.Time `json:"createdAt"`
+	TotalLikes int       `json:"totalLikes"`
+	UserId     int       `json:"userId"`
+	Comments   []Comment `json:"comments" gorm:"foreignKey:PostID;references:ID"`
 }
 
 // PostRequest is used for creating or updating a post.
@@ -40,6 +51,10 @@ func (PostDBModel) TableName() string {
 }
 
 func (GetPost) TableName() string {
+	return "posts"
+}
+
+func (GetPostWithComments) TableName() string {
 	return "posts"
 }
 

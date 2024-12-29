@@ -1,6 +1,7 @@
 package comments
 
 import (
+	"anon-confessions/cmd/internal/models"
 	"context"
 	"fmt"
 	"log"
@@ -15,8 +16,8 @@ func NewCommentsService(CommentsRepo CommentsRepository) *CommentsService {
 	return &CommentsService{CommentsRepo: CommentsRepo}
 }
 
-func (s *CommentsService) CreateComments(ctx context.Context, postId, userId int, comment CreateCommentRequest) error {
-	commentsDbModel := CommentsDbModel{
+func (s *CommentsService) CreateComments(ctx context.Context, postId, userId int, comment models.CreateCommentRequest) error {
+	commentsDbModel := models.CommentsDbModel{
 		Content:   comment.Content,
 		CreatedAt: time.Now(),
 		UserId:    userId,
@@ -32,7 +33,7 @@ func (s *CommentsService) CreateComments(ctx context.Context, postId, userId int
 	return nil
 }
 
-func (s *CommentsService) GetCommentsCollection(ctx context.Context, postId int) (*GetCommentsCollection, error) {
+func (s *CommentsService) GetCommentsCollection(ctx context.Context, postId int) (*models.GetCommentsCollection, error) {
 	commentsCollection, err := s.CommentsRepo.GetCommentsCollection(ctx, postId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve comments: %w", err)
@@ -41,7 +42,7 @@ func (s *CommentsService) GetCommentsCollection(ctx context.Context, postId int)
 	return commentsCollection, nil
 }
 
-func (s *CommentsService) UpdateComments(ctx context.Context, commentId, postId, userId int, comment CreateCommentRequest) (int64, error) {
+func (s *CommentsService) UpdateComments(ctx context.Context, commentId, postId, userId int, comment models.CreateCommentRequest) (int64, error) {
 	rowsAffected, err := s.CommentsRepo.UpdateComments(ctx, commentId, postId, userId, comment)
 	if err != nil {
 		return -1, fmt.Errorf("failed to update post: %w", err)

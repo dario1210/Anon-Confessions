@@ -1,6 +1,7 @@
 package user
 
 import (
+	"anon-confessions/cmd/internal/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ func (h *UserHandler) handleUserAccountCreation(c *gin.Context) {
 		return
 	}
 
-	user := UserResponse{
+	user := models.UserResponse{
 		AccountNumber: accNumber,
 	}
 

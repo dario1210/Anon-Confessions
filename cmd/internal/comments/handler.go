@@ -2,6 +2,7 @@ package comments
 
 import (
 	"anon-confessions/cmd/internal/helper"
+	"anon-confessions/cmd/internal/models"
 	"anon-confessions/cmd/internal/posts"
 	"log"
 	"net/http"
@@ -23,7 +24,7 @@ func (h *CommentsHandler) CreateCommentsHandler(c *gin.Context) {
 	userId := helper.RetrieveLoggedInUserId(c)
 	postId := helper.ParseIDParam(c, "id")
 
-	var comment CreateCommentRequest
+	var comment models.CreateCommentRequest
 	if err := c.ShouldBindJSON(&comment); err != nil {
 		log.Println(http.StatusBadRequest, helper.ErrorMessage{Message: err.Error()})
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})
@@ -70,7 +71,7 @@ func (h *CommentsHandler) UpdateCommentHandler(c *gin.Context) {
 	postId := helper.ParseIDParam(c, "id")
 	commentId := helper.ParseIDParam(c, "commentId")
 
-	var comment CreateCommentRequest
+	var comment models.CreateCommentRequest
 	if err := c.ShouldBindJSON(&comment); err != nil {
 		log.Println(http.StatusBadRequest, helper.ErrorMessage{Message: err.Error()})
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})

@@ -2,6 +2,7 @@ package posts
 
 import (
 	"anon-confessions/cmd/internal/helper"
+	"anon-confessions/cmd/internal/models"
 	"log"
 	"net/http"
 
@@ -20,7 +21,7 @@ func (h *PostsHandler) CreatePostHandler(c *gin.Context) {
 	userId := helper.RetrieveLoggedInUserId(c)
 
 	// Validate Request. (gin uses a validator library)
-	var post PostRequest
+	var post models.PostRequest
 	if err := c.ShouldBindJSON(&post); err != nil {
 		log.Println(http.StatusBadRequest, gin.H{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})
@@ -90,7 +91,7 @@ func (h *PostsHandler) UpdatePostsHandler(c *gin.Context) {
 	postId := helper.ParseIDParam(c, "id")
 
 	// Validate Request. (gin uses a validator library)
-	var post PostRequest
+	var post models.PostRequest
 	if err := c.ShouldBindJSON(&post); err != nil {
 		log.Println(http.StatusBadRequest, gin.H{"error": err.Error()})
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})
@@ -116,7 +117,7 @@ func (h *PostsHandler) UpdateLikesHandler(c *gin.Context) {
 	userId := helper.RetrieveLoggedInUserId(c)
 	ctx := c.Request.Context()
 
-	var postsLikes UpdateLikesRequest
+	var postsLikes models.UpdateLikesRequest
 	if err := c.ShouldBindJSON(&postsLikes); err != nil {
 		log.Println("Error parsing request body:", err)
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body"})

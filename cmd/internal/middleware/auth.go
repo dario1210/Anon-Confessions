@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"anon-confessions/cmd/internal/helper"
-	"anon-confessions/cmd/internal/user"
+	"anon-confessions/cmd/internal/models"
 	"log"
 	"net/http"
 
@@ -23,14 +23,14 @@ func Authentication(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var users []user.Users
+		var users []models.Users
 		if err := db.Find(&users).Error; err != nil {
 			log.Printf("Authentication failed: Database error: %v", err)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
 
-		var authenticatedUser *user.Users
+		var authenticatedUser *models.Users
 		for _, user := range users {
 			err := helper.CompareHashAndPassword([]byte(user.AccountNumber), []byte(accNum))
 			if err == nil {

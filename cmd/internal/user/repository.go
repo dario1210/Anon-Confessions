@@ -1,11 +1,13 @@
 package user
 
 import (
+	"anon-confessions/cmd/internal/models"
+
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
-	CreateUser(Users) error
+	CreateUser(models.Users) error
 }
 
 type SQLiteUserRepository struct {
@@ -16,7 +18,7 @@ func NewSQLiteUserRepository(db *gorm.DB) *SQLiteUserRepository {
 	return &SQLiteUserRepository{db: db}
 }
 
-func (repo *SQLiteUserRepository) CreateUser(user Users) error {
+func (repo *SQLiteUserRepository) CreateUser(user models.Users) error {
 	if err := repo.db.Create(&user).Error; err != nil {
 		return err
 	}
