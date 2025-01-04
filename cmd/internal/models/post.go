@@ -46,7 +46,7 @@ type PostsLikesDBModel struct {
 	UserId int `json:"user_id"`
 }
 
-// By implementing the interface we can change the name of the table.
+// By implementing the interface we can override the name of the table, that GORM uses when querying the database.
 func (PostDBModel) TableName() string {
 	return "posts"
 }

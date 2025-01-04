@@ -46,17 +46,24 @@ func RunMigrations(cfg *config.Migrations) error {
 		return fmt.Errorf("invalid migration configuration: config is nil")
 	}
 
-	// Initialize migratations
+	log.Println("Initializing migrations...")
 	m, err := migrate.New(cfg.MigrationPath, cfg.DBURL)
 	if err != nil {
-		return fmt.Errorf("err: %w", err)
+		log.Printf("Failed to initialize migrations. MigrationPath: %s, DBURL: %s/n", cfg.MigrationPath, cfg.DBURL)
+		return fmt.Errorf("failed to initialize migrations: %w", err)
 	}
 
-	// Run migrations
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("err: %w", err)
+	log.Println("Running migrations...")
+	if err := m.Up(); err != nil {
+		if err == migrate.ErrNoChange {
+			log.Println("No new migrations to apply.")
+		} else {
+			log.Printf("Migration failed: %v\n", err)
+			return fmt.Errorf("migration failed: %w", err)
+		}
+	} else {
+		log.Println("Migrations applied successfully!")
 	}
 
-	log.Println("Migrations applied successfully!")
 	return nil
 }

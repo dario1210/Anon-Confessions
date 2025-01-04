@@ -67,6 +67,7 @@ func NewApp() (*App, error) {
 		Config: *cfg,
 		DB:     dbConn,
 		Router: router,
+		// Logger : logger,
 	}
 
 	return app, nil

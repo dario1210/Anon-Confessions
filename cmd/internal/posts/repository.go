@@ -111,7 +111,7 @@ func (repo *SQLitePostsRepository) UpdateLikes(ctx context.Context, postId, user
 
 		// The use of raw SQL here is intentional to handle scenarios where the unique constraint on this table might be violated.
 		// Instead of performing an additional query to check if the post was already liked, raw SQL with "INSERT OR IGNORE"
-		// allows us to handle this case efficiently in a single operation.Ignoring the insert if already exists.
+		// allows us to handle this case efficiently in a single operation.Ignoring the insert if it already exists.
 		if sign > 0 {
 			rawSQL := `
 			INSERT OR IGNORE INTO posts_likes (post_id, user_id) 
