@@ -4,6 +4,7 @@
 package helper
 
 import (
+	"anon-confessions/cmd/internal/models"
 	"crypto/rand"
 	"fmt"
 	"log"
@@ -85,4 +86,20 @@ func ParseIDParam(c *gin.Context, param string) int {
 		return 0
 	}
 	return intID
+}
+
+// GenerateSortOrder generates an SQL ORDER BY clause based on the provided sorting preferences.
+// It will give priority to the SortByLikes field if it is set.
+func GenerateOrderClause(postQueryParam models.PostQueryParams) string {
+	var orderClause string
+
+	if postQueryParam.SortByLikes != "" {
+		orderClause = "total_likes " + postQueryParam.SortByLikes
+	}
+	if postQueryParam.SortByCreationDate != "" {
+		orderClause = "created_at " + postQueryParam.SortByCreationDate
+	}
+
+	log.Println("Generated ORDER BY clause:", orderClause)
+	return orderClause
 }
