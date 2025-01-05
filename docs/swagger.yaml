@@ -1,20 +1,5 @@
 basePath: /api/v1
 definitions:
-  comments.Comments:
-    properties:
-      content:
-        type: string
-      createdAt:
-        type: string
-    type: object
-  comments.CreateCommentRequest:
-    properties:
-      content:
-        minLength: 2
-        type: string
-    required:
-    - content
-    type: object
   helper.ErrorMessage:
     properties:
       error:
@@ -25,18 +10,14 @@ definitions:
       msg:
         type: string
     type: object
-  posts.GetPost:
+  models.Comments:
     properties:
       content:
         type: string
       createdAt:
         type: string
-      id:
-        type: integer
-      totalLikes:
-        type: integer
     type: object
-  posts.PostRequest:
+  models.CreateCommentRequest:
     properties:
       content:
         minLength: 2
@@ -44,7 +25,28 @@ definitions:
     required:
     - content
     type: object
-  posts.UpdateLikesRequest:
+  models.GetPost:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      isLiked:
+        type: integer
+      totalLikes:
+        type: integer
+    type: object
+  models.PostRequest:
+    properties:
+      content:
+        minLength: 2
+        type: string
+    required:
+    - content
+    type: object
+  models.UpdateLikesRequest:
     properties:
       action:
         enum:
@@ -54,7 +56,7 @@ definitions:
     required:
     - action
     type: object
-  user.UserResponse:
+  models.UserResponse:
     properties:
       accountNumber:
         type: string
@@ -80,12 +82,42 @@ paths:
     get:
       consumes:
       - application/json
-      description: Fetches a collection of posts. Requires authentication using X-Account-Number.
+      description: Fetches a collection of posts. Requires authentication using X-Account-Number.                           If
+        both sorting options are provided, priority will be given to the SortByCreationDate
+        field.
       parameters:
       - description: 16-digit account number (e.g., 1234567890123456)
         in: header
         name: X-Account-Number
         required: true
+        type: string
+      - default: 1
+        description: 'Page number (default: 1)'
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: 'Number of items per page (default: 10)'
+        in: query
+        minimum: 1
+        name: limit
+        type: integer
+      - default: ""
+        description: Sort by creation date (asc or desc)
+        enum:
+        - asc
+        - desc
+        in: query
+        name: creation_date
+        type: string
+      - default: ""
+        description: Sort by likes (asc or desc)
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_by_likes
         type: string
       produces:
       - application/json
@@ -117,7 +149,7 @@ paths:
         name: post
         required: true
         schema:
-          $ref: '#/definitions/posts.PostRequest'
+          $ref: '#/definitions/models.PostRequest'
       produces:
       - application/json
       responses:
@@ -201,7 +233,7 @@ paths:
         "200":
           description: Post retrieved successfully
           schema:
-            $ref: '#/definitions/posts.GetPost'
+            $ref: '#/definitions/models.GetPost'
         "400":
           description: Invalid post ID
           schema:
@@ -238,7 +270,7 @@ paths:
         name: post
         required: true
         schema:
-          $ref: '#/definitions/posts.PostRequest'
+          $ref: '#/definitions/models.PostRequest'
       produces:
       - application/json
       responses:
@@ -285,7 +317,7 @@ paths:
           description: Comments retrieved successfully
           schema:
             items:
-              $ref: '#/definitions/comments.Comments'
+              $ref: '#/definitions/models.Comments'
             type: array
         "500":
           description: Failed to retrieve comments
@@ -315,7 +347,7 @@ paths:
         name: comment
         required: true
         schema:
-          $ref: '#/definitions/comments.CreateCommentRequest'
+          $ref: '#/definitions/models.CreateCommentRequest'
       produces:
       - application/json
       responses:
@@ -412,7 +444,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/comments.CreateCommentRequest'
+          $ref: '#/definitions/models.CreateCommentRequest'
       produces:
       - application/json
       responses:
@@ -461,7 +493,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/posts.UpdateLikesRequest'
+          $ref: '#/definitions/models.UpdateLikesRequest'
       produces:
       - application/json
       responses:
@@ -495,7 +527,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.UserResponse'
+            $ref: '#/definitions/models.UserResponse'
       summary: Create a new user account
       tags:
       - users

@@ -21,7 +21,7 @@ const docTemplate = `{
     "paths": {
         "/posts": {
             "get": {
-                "description": "Fetches a collection of posts. Requires authentication using X-Account-Number.",
+                "description": "Fetches a collection of posts. Requires authentication using X-Account-Number.                           If both sorting options are provided, priority will be given to the SortByCreationDate field.",
                 "consumes": [
                     "application/json"
                 ],
@@ -39,6 +39,44 @@ const docTemplate = `{
                         "name": "X-Account-Number",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page (default: 10)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "",
+                        "description": "Sort by creation date (asc or desc)",
+                        "name": "creation_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "",
+                        "description": "Sort by likes (asc or desc)",
+                        "name": "sort_by_likes",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -83,7 +121,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/posts.PostRequest"
+                            "$ref": "#/definitions/models.PostRequest"
                         }
                     }
                 ],
@@ -148,7 +186,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Post retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/posts.GetPost"
+                            "$ref": "#/definitions/models.GetPost"
                         }
                     },
                     "400": {
@@ -259,7 +297,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/posts.PostRequest"
+                            "$ref": "#/definitions/models.PostRequest"
                         }
                     }
                 ],
@@ -326,7 +364,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/comments.Comments"
+                                "$ref": "#/definitions/models.Comments"
                             }
                         }
                     },
@@ -371,7 +409,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/comments.CreateCommentRequest"
+                            "$ref": "#/definitions/models.CreateCommentRequest"
                         }
                     }
                 ],
@@ -512,7 +550,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/comments.CreateCommentRequest"
+                            "$ref": "#/definitions/models.CreateCommentRequest"
                         }
                     }
                 ],
@@ -584,7 +622,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/posts.UpdateLikesRequest"
+                            "$ref": "#/definitions/models.UpdateLikesRequest"
                         }
                     }
                 ],
@@ -633,7 +671,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/user.UserResponse"
+                            "$ref": "#/definitions/models.UserResponse"
                         }
                     }
                 }
@@ -641,29 +679,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "comments.Comments": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "comments.CreateCommentRequest": {
-            "type": "object",
-            "required": [
-                "content"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string",
-                    "minLength": 2
-                }
-            }
-        },
         "helper.ErrorMessage": {
             "type": "object",
             "properties": {
@@ -680,7 +695,7 @@ const docTemplate = `{
                 }
             }
         },
-        "posts.GetPost": {
+        "models.Comments": {
             "type": "object",
             "properties": {
                 "content": {
@@ -688,16 +703,10 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "totalLikes": {
-                    "type": "integer"
                 }
             }
         },
-        "posts.PostRequest": {
+        "models.CreateCommentRequest": {
             "type": "object",
             "required": [
                 "content"
@@ -709,7 +718,39 @@ const docTemplate = `{
                 }
             }
         },
-        "posts.UpdateLikesRequest": {
+        "models.GetPost": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isLiked": {
+                    "type": "integer"
+                },
+                "totalLikes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.PostRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            }
+        },
+        "models.UpdateLikesRequest": {
             "type": "object",
             "required": [
                 "action"
@@ -724,7 +765,7 @@ const docTemplate = `{
                 }
             }
         },
-        "user.UserResponse": {
+        "models.UserResponse": {
             "type": "object",
             "properties": {
                 "accountNumber": {

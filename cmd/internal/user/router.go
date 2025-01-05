@@ -18,6 +18,6 @@ func RegisterUsersRoutes(router *gin.RouterGroup, userHandler *UserHandler, db *
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} UserResponse
+// @Success 200 {object} models.UserResponse
 // @Router /users/register [post]
 func createUser(c *gin.Context) {}

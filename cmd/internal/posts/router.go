@@ -14,7 +14,7 @@ func RegisterPostRoutes(router *gin.RouterGroup, postsHandler *PostsHandler, db 
 	{
 		postGroup.POST("/", postsHandler.CreatePostHandler)
 		postGroup.GET("/", postsHandler.GetPostsCollectionHandler)
-		postGroup.GET("/:id", postsHandler.GetPost)
+		postGroup.GET("/:id", postsHandler.GetPostHandler)
 		postGroup.PATCH("/:id", postsHandler.UpdatePostsHandler)
 		postGroup.DELETE("/:id", postsHandler.DeletePostsHandler)
 		postGroup.PATCH("/:id/likes", postsHandler.UpdateLikesHandler)
@@ -32,7 +32,7 @@ func RegisterPostRoutes(router *gin.RouterGroup, postsHandler *PostsHandler, db 
 // @Produce json
 // @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path string true "Post ID"
-// @Success 200 {object} GetPost "Post retrieved successfully"
+// @Success 200 {object} models.GetPost "Post retrieved successfully"
 // @Failure 400 {object} helper.ErrorMessage "Invalid post ID"
 // @Failure 401 {object} helper.ErrorMessage "Invalid or missing X-Account-Number"
 // @Failure 500 {object} helper.ErrorMessage "Failed to retrieve post"
@@ -46,7 +46,7 @@ func getPostsHandler(c *gin.Context) {}
 // @Accept json
 // @Produce json
 // @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
-// @Param post body PostRequest true "Post content"
+// @Param post body models.PostRequest true "Post content"
 // @Success 201 {object} helper.SuccessMessage "Post created successfully"
 // @Failure 400 {object} helper.ErrorMessage "Invalid request body"
 // @Failure 401 {object} helper.ErrorMessage "Invalid or missing X-Account-Number"
@@ -56,12 +56,16 @@ func createPostHandler(c *gin.Context) {}
 
 // GetPostsCollectionHandler handles retrieving a collection of posts.
 // @Summary Retrieve a collection of posts
-// @Description Fetches a collection of posts. Requires authentication using X-Account-Number.
+// @Description Fetches a collection of posts. Requires authentication using X-Account-Number.                           If both sorting options are provided, priority will be given to the SortByCreationDate field.
 // @Tags posts
 // @Accept json
 // @Produce json
 // @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
-// @Success 200 {object} GetPostsCollection "Posts retrieved successfully"
+// @Param page query int false "Page number (default: 1)" minimum(1) default(1)
+// @Param limit query int false "Number of items per page (default: 10)" minimum(1) default(10)
+// @Param creation_date query string false "Sort by creation date (asc or desc)" Enums(asc,desc) default()
+// @Param sort_by_likes query string false "Sort by likes (asc or desc)" Enums(asc,desc) default()
+// @Success 200 {object} models.GetPostsCollection "Posts retrieved successfully"
 // @Success 200 {object} map[string]interface{} "{} if no posts are found"
 // @Failure 500 {object} helper.ErrorMessage "Failed to retrieve posts"
 // @Router /posts [get]
@@ -90,7 +94,7 @@ func (h *PostsHandler) deletePostsHandler(c *gin.Context) {}
 // @Produce json
 // @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
-// @Param post body PostRequest true "Post content"
+// @Param post body models.PostRequest true "Post content"
 // @Success 200 {object} helper.SuccessMessage "Updated successfully"
 // @Failure 400 {object} helper.ErrorMessage "Invalid request body or parameters"
 // @Failure 404 {object} helper.ErrorMessage "Post not found or no updates applied"
@@ -106,7 +110,7 @@ func (h *PostsHandler) updatePostsHandler(c *gin.Context) {}
 // @Produce json
 // @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
-// @Param body body UpdateLikesRequest true "Action to like or unlike the post"
+// @Param body body models.UpdateLikesRequest true "Action to like or unlike the post"
 // @Success 200 {object} helper.SuccessMessage "Action applied successfully"
 // @Failure 400 {object} helper.ErrorMessage "Invalid request body or parameters"
 // @Failure 404 {object} helper.ErrorMessage "Post not found or action not applied"
