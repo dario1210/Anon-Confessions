@@ -1,16 +1,12 @@
 package comments
 
 import (
-	"anon-confessions/cmd/internal/middleware"
-
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // RegisterCommentsRoutes registers all routes related to posts.
-func RegisterCommentsRoutes(router *gin.RouterGroup, h *CommentsHandler, db *gorm.DB) {
+func RegisterCommentsRoutes(router *gin.RouterGroup, h *CommentsHandler) {
 	commentGroup := router.Group("/posts/:id/comments")
-	commentGroup.Use(middleware.Authentication(db))
 	{
 		commentGroup.POST("/", h.CreateCommentsHandler)
 		commentGroup.GET("/", h.GetCommentsCollection)

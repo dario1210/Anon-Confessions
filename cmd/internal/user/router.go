@@ -2,11 +2,10 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // RegisterUserRoutes registers all routes related to posts.
-func RegisterUsersRoutes(router *gin.RouterGroup, userHandler *UserHandler, db *gorm.DB) {
+func RegisterUsersRoutes(router *gin.RouterGroup, userHandler *UserHandler) {
 	userGroup := router.Group("/users")
 	{
 		userGroup.POST("/register", userHandler.handleUserAccountCreation)
