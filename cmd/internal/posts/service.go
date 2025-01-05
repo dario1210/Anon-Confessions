@@ -40,8 +40,9 @@ func (s *PostsService) GetPost(ctx context.Context, postID int) (*models.GetPost
 	return post, nil
 }
 
-func (s *PostsService) GetPostsCollection(ctx context.Context, userId int) (*models.GetPostsCollection, error) {
-	postCollection, err := s.PostsRepo.GetPostsCollection(ctx, userId)
+func (s *PostsService) GetPostsCollection(ctx context.Context, userId int, postQueryParam models.PostQueryParams) (*models.GetPostsCollection, error) {
+	postCollection, err := s.PostsRepo.GetPostsCollection(ctx, userId, postQueryParam)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve posts: %w", err)
 	}

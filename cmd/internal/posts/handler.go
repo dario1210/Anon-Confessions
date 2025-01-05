@@ -39,7 +39,7 @@ func (h *PostsHandler) CreatePostHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Post Created Succesfully"})
 }
 
-func (h *PostsHandler) GetPost(c *gin.Context) {
+func (h *PostsHandler) GetPostHandler(c *gin.Context) {
 	ctx := c.Request.Context()
 	id := helper.ParseIDParam(c, "id")
 
@@ -55,7 +55,25 @@ func (h *PostsHandler) GetPost(c *gin.Context) {
 func (h *PostsHandler) GetPostsCollectionHandler(c *gin.Context) {
 	ctx := c.Request.Context()
 	userId := helper.RetrieveLoggedInUserId(c)
-	post, err := h.postsService.GetPostsCollection(ctx, userId)
+
+	var postQueryParam models.PostQueryParams
+	if err := c.ShouldBindQuery(&postQueryParam); err != nil {
+		log.Println(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid query params. Please check your input."})
+		return
+	}
+
+	if postQueryParam.Page == 0 {
+		postQueryParam.Page = 1
+	}
+	if postQueryParam.Limit == 0 {
+		postQueryParam.Limit = 10
+	}
+	if postQueryParam.SortByLikes == "" && postQueryParam.SortByCreationDate == "" {
+		postQueryParam.SortByCreationDate = "asc"
+	}
+
+	post, err := h.postsService.GetPostsCollection(ctx, userId, postQueryParam)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to retireve posts."})
 		return

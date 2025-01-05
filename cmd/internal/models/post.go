@@ -37,6 +37,13 @@ type GetPost struct {
 
 type GetPostsCollection []GetPost
 
+type PostQueryParams struct {
+	Page               int    `form:"page" binding:"omitempty,min=1"`
+	Limit              int    `form:"limit" binding:"omitempty,min=1"`
+	SortByCreationDate string `form:"creation_date" binding:"omitempty,oneof=asc desc"`
+	SortByLikes        string `form:"sort_by_likes" binding:"omitempty,oneof=asc desc"`
+}
+
 type UpdateLikesRequest struct {
 	Action string `json:"action" binding:"required,oneof=Like Unlike"`
 }

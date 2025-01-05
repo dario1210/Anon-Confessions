@@ -1,6 +1,7 @@
 package posts
 
 import (
+	"anon-confessions/cmd/internal/helper"
 	"anon-confessions/cmd/internal/models"
 	"context"
 	"log"
@@ -13,7 +14,7 @@ import (
 type PostsRepository interface {
 	CreatePosts(context.Context, models.PostDBModel) error
 	GetPost(context.Context, int) (*models.GetPostWithComments, error)
-	GetPostsCollection(context.Context, int) (*models.GetPostsCollection, error)
+	GetPostsCollection(context.Context, int, models.PostQueryParams) (*models.GetPostsCollection, error)
 	UpdatePosts(context.Context, int, int, models.PostRequest) (int64, error)
 	DeletePost(int, int) (int64, error)
 	UpdateLikes(context.Context, int, int, int) (int64, error)
@@ -48,8 +49,10 @@ func (repo *SQLitePostsRepository) GetPost(ctx context.Context, id int) (*models
 	return &post, nil
 }
 
-func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context, userId int) (*models.GetPostsCollection, error) {
+func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context, userId int, postQueryParams models.PostQueryParams) (*models.GetPostsCollection, error) {
 	var postCollection models.GetPostsCollection
+
+	orderClause := helper.GenerateOrderClause(postQueryParams)
 
 	result := repo.db.WithContext(ctx).
 		Model(&models.PostDBModel{}).
@@ -61,7 +64,9 @@ func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context, userI
         	posts_likes.user_id IS NOT NULL AS IsLiked
 		`).
 		Joins("LEFT JOIN posts_likes ON posts.id = posts_likes.post_id AND posts_likes.user_id = ?", userId).
-		Scan(&postCollection)
+		Order(orderClause).
+		Limit(postQueryParams.Limit).
+		Offset((postQueryParams.Page - 1) * postQueryParams.Limit).Scan(&postCollection)
 
 	if result.Error != nil {
 		log.Println(result.Error)
