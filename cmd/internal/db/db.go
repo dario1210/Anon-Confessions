@@ -4,7 +4,7 @@ import (
 	"anon-confessions/cmd/internal/config"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -16,19 +16,23 @@ import (
 
 // DbConnection initializes and returns a new database connection.
 func DbConnection(dbName string) (*gorm.DB, error) {
+	slog.Info("Initializing database connection...", "dbName", dbName)
 	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
+		slog.Error("Failed to get raw database connection", "error", err)
 		return nil, fmt.Errorf("failed to get raw database connection: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
+		slog.Error("Failed to get *sql.DB from gorm.DB", "error", err)
 		return nil, fmt.Errorf("failed to get *sql.DB from gorm.DB: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := sqlDB.PingContext(ctx); err != nil {
+		slog.Error("Database ping failed", "error", err)
 		return nil, fmt.Errorf("database ping failed: %w", err)
 	}
 
@@ -37,32 +41,34 @@ func DbConnection(dbName string) (*gorm.DB, error) {
 	sqlDB.SetMaxIdleConns(5)                // Limit idle connections
 	sqlDB.SetConnMaxLifetime(1 * time.Hour) // Set connection lifetime
 
+	slog.Info("Database connection established successfully", "dbName", dbName)
 	return db, nil
 }
 
 // RunMigrations runs the migrations using golang-migrate.
 func RunMigrations(cfg *config.Migrations) error {
 	if cfg == nil {
+		slog.Error("Invalid migration configuration: config is nil")
 		return fmt.Errorf("invalid migration configuration: config is nil")
 	}
 
-	log.Println("Initializing migrations...")
-	m, err := migrate.New(cfg.MigrationPath, cfg.DBURL)
+	slog.Info("Initializing migrations...", "MigrationPath", cfg.MigrationPath, "DBURL", cfg.DBURL)
+	m, err := migrate.New("file://cmd/internal/db/migrations", cfg.DBURL)
 	if err != nil {
-		log.Printf("Failed to initialize migrations. MigrationPath: %s, DBURL: %s/n", cfg.MigrationPath, cfg.DBURL)
+		slog.Error("Failed to initialize migrations", "MigrationPath", cfg.MigrationPath, "DBURL", cfg.DBURL, "error", err)
 		return fmt.Errorf("failed to initialize migrations: %w", err)
 	}
 
-	log.Println("Running migrations...")
+	slog.Info("Running migrations...")
 	if err := m.Up(); err != nil {
 		if err == migrate.ErrNoChange {
-			log.Println("No new migrations to apply.")
+			slog.Info("No new migrations to apply.")
 		} else {
-			log.Printf("Migration failed: %v\n", err)
+			slog.Error("Migration failed", "error", err)
 			return fmt.Errorf("migration failed: %w", err)
 		}
 	} else {
-		log.Println("Migrations applied successfully!")
+		slog.Info("Migrations applied successfully!")
 	}
 
 	return nil
