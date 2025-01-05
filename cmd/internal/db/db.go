@@ -67,9 +67,8 @@ func RunMigrations(cfg *config.Migrations) error {
 			slog.Error("Migration failed", "error", err)
 			return fmt.Errorf("migration failed: %w", err)
 		}
-	} else {
-		slog.Info("Migrations applied successfully!")
 	}
+	slog.Info("Migrations applied successfully!")
 
 	return nil
 }
