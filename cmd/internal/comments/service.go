@@ -2,6 +2,7 @@ package comments
 
 import (
 	"anon-confessions/cmd/internal/models"
+	"anon-confessions/cmd/internal/websocket"
 	"context"
 	"fmt"
 	"log"
@@ -10,10 +11,11 @@ import (
 
 type CommentsService struct {
 	CommentsRepo CommentsRepository
+	hub          *websocket.Hub
 }
 
-func NewCommentsService(CommentsRepo CommentsRepository) *CommentsService {
-	return &CommentsService{CommentsRepo: CommentsRepo}
+func NewCommentsService(CommentsRepo CommentsRepository, hub *websocket.Hub) *CommentsService {
+	return &CommentsService{CommentsRepo: CommentsRepo, hub: hub}
 }
 
 func (s *CommentsService) CreateComments(ctx context.Context, postId, userId int, comment models.CreateCommentRequest) error {
@@ -29,6 +31,8 @@ func (s *CommentsService) CreateComments(ctx context.Context, postId, userId int
 		log.Println("Create Comments Service:", err)
 		return err
 	}
+
+	s.hub.Broadcast <- []byte("New Comment Created")
 
 	return nil
 }

@@ -2,6 +2,7 @@ package posts
 
 import (
 	"anon-confessions/cmd/internal/models"
+	"anon-confessions/cmd/internal/websocket"
 	"context"
 	"fmt"
 	"log"
@@ -10,10 +11,11 @@ import (
 
 type PostsService struct {
 	PostsRepo PostsRepository
+	hub       *websocket.Hub
 }
 
-func NewPostsService(PostsRepo PostsRepository) *PostsService {
-	return &PostsService{PostsRepo: PostsRepo}
+func NewPostsService(PostsRepo PostsRepository, hub *websocket.Hub) *PostsService {
+	return &PostsService{PostsRepo: PostsRepo, hub: hub}
 }
 
 func (s *PostsService) CreatePosts(ctx context.Context, post models.PostRequest, userID int) error {
@@ -28,6 +30,10 @@ func (s *PostsService) CreatePosts(ctx context.Context, post models.PostRequest,
 		log.Println("Create Posts Service:", err)
 		return err
 	}
+
+	// Broadcast to all connected clients
+	s.hub.Broadcast <- []byte("New Post Created")
+
 	return nil
 }
 
@@ -84,6 +90,11 @@ func (s *PostsService) UpdateLikes(ctx context.Context, postId, userId int, post
 	if err != nil {
 		return -1, fmt.Errorf("failed to update likes: %w", err)
 	}
+
+	// Broadcast to all connected clients
+	// HAVE A STRUCT THAT CONTAINS THE NUMBER OF LIKES
+	s.hub.Broadcast <- []byte("Likes Updated")
+	// S.hub.Broadcast <- string(model)
 
 	return rowsAffected, nil
 }

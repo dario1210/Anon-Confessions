@@ -36,6 +36,7 @@ func (h *PostsHandler) CreatePostHandler(c *gin.Context) {
 		return
 	}
 
+
 	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Post Created Succesfully"})
 }
 

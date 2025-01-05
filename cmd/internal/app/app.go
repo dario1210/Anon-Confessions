@@ -4,8 +4,10 @@ import (
 	"anon-confessions/cmd/internal/comments"
 	"anon-confessions/cmd/internal/config"
 	"anon-confessions/cmd/internal/db"
+	"anon-confessions/cmd/internal/middleware"
 	"anon-confessions/cmd/internal/posts"
 	"anon-confessions/cmd/internal/user"
+	"anon-confessions/cmd/internal/websocket"
 	"anon-confessions/docs"
 	"fmt"
 	"log"
@@ -37,9 +39,17 @@ func NewApp() (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
+
 	if err := db.RunMigrations(&cfg.Migrations); err != nil {
 		return nil, fmt.Errorf("database migrations failed: %w", err)
 	}
+
+	// Websocket
+	hub := websocket.NewHub()
+	go hub.Run()
+
+	// MIDDLEWARE
+	authMiddleware := middleware.Authentication(dbConn)
 
 	// Repositories
 	userRepo := user.NewSQLiteUserRepository(dbConn)
@@ -48,8 +58,8 @@ func NewApp() (*App, error) {
 
 	// Services
 	userService := user.NewUserService(userRepo)
-	postsService := posts.NewPostsService(postsRepo)
-	commentsService := comments.NewCommentsService(commentsRepo)
+	postsService := posts.NewPostsService(postsRepo, hub)
+	commentsService := comments.NewCommentsService(commentsRepo, hub)
 
 	// Handlers
 	userHandler := user.NewUserHandler(userService)
@@ -61,13 +71,13 @@ func NewApp() (*App, error) {
 		PostsHandler:    postsHandler,
 		CommentsHandler: commentsHandler,
 	}
-	router := setupRouter(handlers, dbConn)
+
+	router := setupRouter(handlers, authMiddleware, hub)
 
 	app := &App{
 		Config: *cfg,
 		DB:     dbConn,
 		Router: router,
-		// Logger : logger,
 	}
 
 	return app, nil
@@ -82,18 +92,29 @@ func (a *App) Run() error {
 	return nil
 }
 
-func setupRouter(h *HandlerContainer, db *gorm.DB) *gin.Engine {
+func setupRouter(h *HandlerContainer, authMiddleware gin.HandlerFunc, hub *websocket.Hub) *gin.Engine {
 	router := gin.Default()
 
+	// Swagger documentation route
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Base API group
 	api := router.Group("/api/v1")
+
+	// Routes that require authentication
+	authenticated := api.Group("/")
+	authenticated.Use(authMiddleware)
 	{
-		posts.RegisterPostRoutes(api, h.PostsHandler, db)
-		user.RegisterUsersRoutes(api, h.UserHandler, db)
-		comments.RegisterCommentsRoutes(api, h.CommentsHandler, db)
+		posts.RegisterPostRoutes(authenticated, h.PostsHandler)
+		comments.RegisterCommentsRoutes(authenticated, h.CommentsHandler)
 	}
+
+	// Routes that do not require authentication
+	user.RegisterUsersRoutes(api, h.UserHandler)
+
+	// WebSocket routes
+	websocket.RegisterWebSocketRoutes(api, hub)
 
 	return router
 }
