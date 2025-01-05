@@ -1,6 +1,6 @@
 // Package helper provides utility functions, reusable structs, and common helpers
 // that can be used across the entire application to reduce redundancy
-// and promote code reusability.package helper
+// and promote code reusability.
 package helper
 
 import (
@@ -100,6 +100,5 @@ func GenerateOrderClause(postQueryParam models.PostQueryParams) string {
 		orderClause = "created_at " + postQueryParam.SortByCreationDate
 	}
 
-	log.Println("Generated ORDER BY clause:", orderClause)
 	return orderClause
 }
