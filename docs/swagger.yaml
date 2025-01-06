@@ -61,7 +61,7 @@ definitions:
       accountNumber:
         type: string
     type: object
-host: localhost:cfg.Port
+host: 'localhost: cfg.Port'
 info:
   contact: {}
   description: |-

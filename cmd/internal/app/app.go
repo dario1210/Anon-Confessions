@@ -40,7 +40,7 @@ type HandlerContainer struct {
 // @description
 // @description     The API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.
 
-// @host            localhost:cfg.Port
+// @host            localhost: cfg.Port
 // @BasePath        /api/v1
 
 // @securityDefinitions.apikey AccountNumberAuth
@@ -50,9 +50,8 @@ type HandlerContainer struct {
 func swaggerInfo() {}
 
 // NewApp initializes the application by loading configuration, setting up database connection, running migrations, and initializing services and handlers.
-func NewApp() (*App, error) {
-	slog.Info("Loading configuration...")
-	cfg := config.LoadConfig()
+func NewApp(cfg *config.Config) (*App, error) {
+	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", cfg.Port)
 
 	slog.Info("Initializing database connection and running migrations...")
 	dbConn, err := db.DbConnection(cfg.DB.File)

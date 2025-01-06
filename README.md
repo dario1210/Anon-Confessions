@@ -105,5 +105,5 @@ make swagger
 #### Without `make`:
 
 ```bash
-	swag init -g cmd/internal/app/app.go
+swag init -g cmd/internal/app/app.go
 ```
