@@ -2,13 +2,19 @@
 
 -- ===========================
 -- 1. USERS
+-- account numbers: 
+-- 1234567891234567
+-- 3998442793406687
+-- 7180218105191773
+-- 6129856725721562
 -- ===========================
+
 INSERT INTO users (account_number) 
 VALUES
-  ('ACC1001'),
-  ('ACC1002'),
-  ('ACC1003'),
-  ('ACC1004');
+  ('$2a$12$Sghxkjm.nrzwR0ym.U82qOT6P.EfW16.L.h6pQBBAreGhjaEUVzWS'),
+  ('$2a$12$S7uiGoEMGKJFLbZHWFJjUO.lao3MeI7EfECrg41/KY/n3VhXFDY16'),
+  ('$2a$12$agN83W3sLUZDqGjTtYAHAeR.4iRrcNgcy9LpMXXzNNze8Qi3FGpCa'),
+  ('$2a$12$IcQn6xuJp2ezw00NeNQ/c.iuZMZrKSBJy.mIdEDdbX6R7JfjhY9ZK');
 
 -- ===========================
 -- 2. POSTS
