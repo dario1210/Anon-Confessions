@@ -28,7 +28,7 @@ func LoadConfig() *Config {
 	cfg := &Config{
 		Port: getEnv("PORT", "9000"),
 		DB: SQLiteConfig{
-			File: getEnv("DBFILE", "anon_confessions.db"),
+			File: getEnv("DB_FILE", "anon_confessions.db"),
 		},
 		Migrations: Migrations{
 			MigrationPath: getEnv("MIGRATIONS_PATH", "file://./cmd/internal/db/migrations_files"),

@@ -30,6 +30,26 @@ type HandlerContainer struct {
 	CommentsHandler *comments.CommentsHandler
 }
 
+// @title           Anonymous Confessions API
+// @version         1.0
+// @description     A privacy-focused backend service that allows users to:
+// @description     • Post and manage anonymous confessions.
+// @description     • React to posts with likes and comments.
+// @description     • Leave comments on confessions.
+// @description     • Receive real-time updates through WebSocket.
+// @description
+// @description     The API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.
+
+// @host            localhost:cfg.Port
+// @BasePath        /api/v1
+
+// @securityDefinitions.apikey AccountNumberAuth
+// @in header
+// @name X-Account-Number
+// @description A unique account number for user authentication.
+func swaggerInfo() {}
+
+// NewApp initializes the application by loading configuration, setting up database connection, running migrations, and initializing services and handlers.
 func NewApp() (*App, error) {
 	slog.Info("Loading configuration...")
 	cfg := config.LoadConfig()
