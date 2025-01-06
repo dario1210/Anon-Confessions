@@ -31,8 +31,8 @@ func LoadConfig() *Config {
 			File: getEnv("DBFILE", "anon_confessions.db"),
 		},
 		Migrations: Migrations{
-			MigrationPath: getEnv("MIGRATIONS_PATH", "file://./cmd/internal/db/migrations"),
-			DBURL:         getEnv("DB_URL", "sqlite3://../../anon_confessions.db"),
+			MigrationPath: getEnv("MIGRATIONS_PATH", "file://./cmd/internal/db/migrations_files"),
+			DBURL:         getEnv("DB_URL", "sqlite3://anon_confessions.db"),
 		},
 	}
 

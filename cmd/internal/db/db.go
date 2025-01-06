@@ -1,13 +1,11 @@
 package db
 
 import (
-	"anon-confessions/cmd/internal/config"
 	"context"
 	"fmt"
 	"log/slog"
 	"time"
 
-	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/driver/sqlite"
@@ -17,10 +15,14 @@ import (
 // DbConnection initializes and returns a new database connection.
 func DbConnection(dbName string) (*gorm.DB, error) {
 	slog.Info("Initializing database connection...", "dbName", dbName)
+
+	// Since we are using sqlite, we do not need to create the database explicitly.
+	// If it does not exist, sqllite will create the db.
+	// Careful any other type of database we need to be sure that it exits before attempting to connect.
 	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
-		slog.Error("Failed to get raw database connection", "error", err)
-		return nil, fmt.Errorf("failed to get raw database connection: %w", err)
+		slog.Error("Failed to open database connection", "error", err)
+		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
 	sqlDB, err := db.DB()
@@ -43,32 +45,4 @@ func DbConnection(dbName string) (*gorm.DB, error) {
 
 	slog.Info("Database connection established successfully", "dbName", dbName)
 	return db, nil
-}
-
-// RunMigrations runs the migrations using golang-migrate.
-func RunMigrations(cfg *config.Migrations) error {
-	if cfg == nil {
-		slog.Error("Invalid migration configuration: config is nil")
-		return fmt.Errorf("invalid migration configuration: config is nil")
-	}
-
-	slog.Info("Initializing migrations...", "MigrationPath", cfg.MigrationPath, "DBURL", cfg.DBURL)
-	m, err := migrate.New("file://cmd/internal/db/migrations", cfg.DBURL)
-	if err != nil {
-		slog.Error("Failed to initialize migrations", "MigrationPath", cfg.MigrationPath, "DBURL", cfg.DBURL, "error", err)
-		return fmt.Errorf("failed to initialize migrations: %w", err)
-	}
-
-	slog.Info("Running migrations...")
-	if err := m.Up(); err != nil {
-		if err == migrate.ErrNoChange {
-			slog.Info("No new migrations to apply.")
-		} else {
-			slog.Error("Migration failed", "error", err)
-			return fmt.Errorf("migration failed: %w", err)
-		}
-	}
-	slog.Info("Migrations applied successfully!")
-
-	return nil
 }
