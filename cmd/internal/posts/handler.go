@@ -3,7 +3,7 @@ package posts
 import (
 	"anon-confessions/cmd/internal/helper"
 	"anon-confessions/cmd/internal/models"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +20,10 @@ func NewPostsHandler(postsService *PostsService) *PostsHandler {
 func (h *PostsHandler) CreatePostHandler(c *gin.Context) {
 	userId := helper.RetrieveLoggedInUserId(c)
 
-	// Validate Request. (gin uses a validator library)
+	// Validate request body.
 	var post models.PostRequest
 	if err := c.ShouldBindJSON(&post); err != nil {
-		log.Println(http.StatusBadRequest, gin.H{"error": err.Error()})
+		slog.Warn("Invalid request body for creating a post", slog.String("error", err.Error()))
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})
 		return
 	}
@@ -31,13 +31,13 @@ func (h *PostsHandler) CreatePostHandler(c *gin.Context) {
 
 	err := h.postsService.CreatePosts(ctx, post, userId)
 	if err != nil {
-		log.Println(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		slog.Error("Failed to create post", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Post Creation Failed"})
 		return
 	}
 
-
-	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Post Created Succesfully"})
+	slog.Info("Post created successfully", slog.Int("userId", userId))
+	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Post Created Successfully"})
 }
 
 func (h *PostsHandler) GetPostHandler(c *gin.Context) {
@@ -46,7 +46,8 @@ func (h *PostsHandler) GetPostHandler(c *gin.Context) {
 
 	post, err := h.postsService.GetPost(ctx, id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to retireve post."})
+		slog.Error("Failed to retrieve post", slog.Int("postId", id), slog.String("error", err.Error()))
+		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to retrieve post."})
 		return
 	}
 
@@ -57,13 +58,15 @@ func (h *PostsHandler) GetPostsCollectionHandler(c *gin.Context) {
 	ctx := c.Request.Context()
 	userId := helper.RetrieveLoggedInUserId(c)
 
+	// Parse query parameters for pagination and sorting.
 	var postQueryParam models.PostQueryParams
 	if err := c.ShouldBindQuery(&postQueryParam); err != nil {
-		log.Println(http.StatusBadRequest, err)
+		slog.Warn("Invalid query parameters for retrieving posts", slog.String("error", err.Error()))
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid query params. Please check your input."})
 		return
 	}
 
+	// Set default values if not provided.
 	if postQueryParam.Page == 0 {
 		postQueryParam.Page = 1
 	}
@@ -76,7 +79,8 @@ func (h *PostsHandler) GetPostsCollectionHandler(c *gin.Context) {
 
 	post, err := h.postsService.GetPostsCollection(ctx, userId, postQueryParam)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to retireve posts."})
+		slog.Error("Failed to retrieve posts", slog.String("error", err.Error()))
+		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to retrieve posts."})
 		return
 	}
 
@@ -94,25 +98,27 @@ func (h *PostsHandler) DeletePostsHandler(c *gin.Context) {
 
 	rowsAffected, err := h.postsService.DeletePost(id, userID)
 	if err != nil {
+		slog.Error("Failed to delete post", slog.Int("postId", id), slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to delete post."})
 		return
 	}
 	if rowsAffected == 0 {
+		slog.Warn("Post not found during delete operation", slog.Int("postId", id))
 		c.JSON(http.StatusNotFound, helper.ErrorMessage{Message: "Post does not exist."})
 		return
 	}
 
-	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Post deleted succesfully."})
+	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Post deleted successfully."})
 }
 
 func (h *PostsHandler) UpdatePostsHandler(c *gin.Context) {
 	userId := helper.RetrieveLoggedInUserId(c)
 	postId := helper.ParseIDParam(c, "id")
 
-	// Validate Request. (gin uses a validator library)
+	// Validate request body.
 	var post models.PostRequest
 	if err := c.ShouldBindJSON(&post); err != nil {
-		log.Println(http.StatusBadRequest, gin.H{"error": err.Error()})
+		slog.Warn("Invalid request body for updating post", slog.String("error", err.Error()))
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})
 		return
 	}
@@ -120,15 +126,17 @@ func (h *PostsHandler) UpdatePostsHandler(c *gin.Context) {
 
 	rowsAffected, err := h.postsService.UpdatePosts(ctx, postId, userId, post)
 	if err != nil {
+		slog.Error("Failed to update post", slog.Int("postId", postId), slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to update post."})
 		return
 	}
 	if rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, helper.ErrorMessage{Message: "Update was not succesful"})
+		slog.Warn("No rows updated during update operation", slog.Int("postId", postId))
+		c.JSON(http.StatusNotFound, helper.ErrorMessage{Message: "Update was not successful"})
 		return
 	}
 
-	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Updated succesfully"})
+	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Updated successfully"})
 }
 
 func (h *PostsHandler) UpdateLikesHandler(c *gin.Context) {
@@ -136,22 +144,21 @@ func (h *PostsHandler) UpdateLikesHandler(c *gin.Context) {
 	userId := helper.RetrieveLoggedInUserId(c)
 	ctx := c.Request.Context()
 
+	// Parse request body for updating likes.
 	var postsLikes models.UpdateLikesRequest
 	if err := c.ShouldBindJSON(&postsLikes); err != nil {
-		log.Println("Error parsing request body:", err)
+		slog.Warn("Invalid request body for updating likes", slog.String("error", err.Error()))
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body"})
 		return
 	}
-	log.Println("Validation successful.")
 
 	rowsAffected, err := h.postsService.UpdateLikes(ctx, postId, userId, postsLikes)
 	if err != nil {
-		log.Println("Error updating likes:", err)
+		slog.Error("Error updating likes", slog.Int("postId", postId), slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Updating likes failed."})
 		return
 	}
 	if rowsAffected == 0 {
-		log.Println("No rows were affected; possibly redundant like/unlike operation")
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Action already performed."})
 		return
 	}

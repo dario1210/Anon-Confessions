@@ -2,6 +2,7 @@ package user
 
 import (
 	"anon-confessions/cmd/internal/models"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,12 +17,16 @@ func NewUserHandler(userService *UserService) *UserHandler {
 }
 
 func (h *UserHandler) handleUserAccountCreation(c *gin.Context) {
-	accNumber, err := h.userService.createUser()
+	slog.Info("Starting user account creation")
 
+	accNumber, err := h.userService.createUser()
 	if err != nil {
+		slog.Error("Failed to create user account", slog.String("error", err.Error()))
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+
+	slog.Info("User account created successfully", slog.String("accountNumber", accNumber))
 
 	user := models.UserResponse{
 		AccountNumber: accNumber,

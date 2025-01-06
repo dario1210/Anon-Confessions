@@ -10,7 +10,7 @@ import (
 	"anon-confessions/cmd/internal/websocket"
 	"anon-confessions/docs"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -31,37 +31,43 @@ type HandlerContainer struct {
 }
 
 func NewApp() (*App, error) {
-	log.Println("Loading configuration...")
+	slog.Info("Loading configuration...")
 	cfg := config.LoadConfig()
 
-	log.Println("Initializing database connection & Migrations ...")
+	slog.Info("Initializing database connection and running migrations...")
 	dbConn, err := db.DbConnection(cfg.DB.File)
 	if err != nil {
+		slog.Error("Failed to connect to database", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
 	if err := db.RunMigrations(&cfg.Migrations); err != nil {
+		slog.Error("Database migrations failed", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("database migrations failed: %w", err)
 	}
 
-	// Websocket
+	slog.Info("Starting WebSocket hub...")
 	hub := websocket.NewHub()
 	go hub.Run()
 
 	// MIDDLEWARE
+	slog.Info("Setting up middleware...")
 	authMiddleware := middleware.Authentication(dbConn)
 
 	// Repositories
+	slog.Info("Initializing repositories...")
 	userRepo := user.NewSQLiteUserRepository(dbConn)
 	postsRepo := posts.NewSQLitePostsRepository(dbConn)
 	commentsRepo := comments.NewSQLiteCommentsRepository(dbConn)
 
 	// Services
+	slog.Info("Initializing services...")
 	userService := user.NewUserService(userRepo)
 	postsService := posts.NewPostsService(postsRepo, hub)
 	commentsService := comments.NewCommentsService(commentsRepo, hub)
 
 	// Handlers
+	slog.Info("Initializing handlers...")
 	userHandler := user.NewUserHandler(userService)
 	postsHandler := posts.NewPostsHandler(postsService)
 	commentsHandler := comments.NewCommentsHandler(commentsService, postsService)
@@ -72,8 +78,10 @@ func NewApp() (*App, error) {
 		CommentsHandler: commentsHandler,
 	}
 
+	slog.Info("Setting up router...")
 	router := setupRouter(handlers, authMiddleware, hub)
 
+	slog.Info("Application initialized successfully")
 	app := &App{
 		Config: *cfg,
 		DB:     dbConn,
@@ -81,14 +89,15 @@ func NewApp() (*App, error) {
 	}
 
 	return app, nil
-
 }
 
 func (a *App) Run() error {
-	log.Printf("Starting the HTTP server on %v...", a.Config.Port)
+	slog.Info("Starting HTTP server", slog.String("port", a.Config.Port))
 	if err := a.Router.Run(fmt.Sprintf(":%v", a.Config.Port)); err != nil {
+		slog.Error("Server failed to start", slog.String("error", err.Error()))
 		return fmt.Errorf("server failed to start: %w", err)
 	}
+	slog.Info("HTTP server started successfully")
 	return nil
 }
 
@@ -96,6 +105,7 @@ func setupRouter(h *HandlerContainer, authMiddleware gin.HandlerFunc, hub *webso
 	router := gin.Default()
 
 	// Swagger documentation route
+	slog.Info("Setting up Swagger documentation routes...")
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -116,5 +126,6 @@ func setupRouter(h *HandlerContainer, authMiddleware gin.HandlerFunc, hub *webso
 	// WebSocket routes
 	websocket.RegisterWebSocketRoutes(api, hub)
 
+	slog.Info("Router setup complete")
 	return router
 }

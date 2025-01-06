@@ -2,7 +2,7 @@ package main
 
 import (
 	"anon-confessions/cmd/internal/app"
-	"log"
+	"log/slog"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -28,15 +28,19 @@ import (
 // @name X-Account-Number
 // @description A unique account number for user authentication.
 func main() {
-	log.Println("Initializing API server...")
 
+	slog.Info("Initializing API server...")
+
+	// Initialize the application
 	app, err := app.NewApp()
 	if err != nil {
-		log.Fatalf("Could not initialize the application: %v", err)
+		slog.Error("Could not initialize the application", slog.String("error", err.Error()))
+		return
 	}
 
+	// Run the application
 	err = app.Run()
 	if err != nil {
-		log.Fatalf("Application runtime error: %v", err)
+		slog.Error("Application runtime error", slog.String("error", err.Error()))
 	}
 }

@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/gorilla/websocket"
 )
@@ -17,15 +17,16 @@ type Client struct {
 	send chan []byte
 }
 
-
 func (c *Client) writePump() {
 	defer c.conn.Close()
 	for message := range c.send {
 		if err := c.conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
-			log.Println("Write error:", err)
+			slog.Warn("Failed to write message to websocket", slog.String("error", err.Error()))
 			return
 		}
 	}
 
-	c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+	if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
+		slog.Warn("Failed to send close message to websocket", slog.String("error", err.Error()))
+	}
 }

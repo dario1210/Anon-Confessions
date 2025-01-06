@@ -3,7 +3,7 @@ package middleware
 import (
 	"anon-confessions/cmd/internal/helper"
 	"anon-confessions/cmd/internal/models"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,18 +14,18 @@ import (
 // It checks if the account number exists in the database and sets the user information in the context if authenticated.
 func Authentication(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Println("Starting authentication process...")
+		slog.Info("Starting authentication process...")
 
 		accNum := c.GetHeader("X-Account-Number")
 		if accNum == "" {
-			log.Println("Authentication failed: Account number missing.")
+			slog.Warn("Authentication failed: Account number missing.")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing account number"})
 			return
 		}
 
 		var users []models.Users
 		if err := db.Find(&users).Error; err != nil {
-			log.Printf("Authentication failed: Database error: %v", err)
+			slog.Warn("Authentication failed: Database error: %v", err)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
@@ -40,12 +40,12 @@ func Authentication(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if authenticatedUser == nil {
-			log.Println("Authentication failed: Invalid account number.")
+			slog.Warn("Authentication failed: Invalid account number.")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid account number"})
 			return
 		}
 
-		log.Printf("User authenticated successfully.")
+		slog.Info("User authenticated successfully.")
 		c.Set("userID", authenticatedUser.ID)
 		c.Next()
 	}

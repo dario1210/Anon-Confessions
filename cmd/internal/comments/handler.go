@@ -4,7 +4,7 @@ import (
 	"anon-confessions/cmd/internal/helper"
 	"anon-confessions/cmd/internal/models"
 	"anon-confessions/cmd/internal/posts"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,7 @@ func (h *CommentsHandler) CreateCommentsHandler(c *gin.Context) {
 
 	var comment models.CreateCommentRequest
 	if err := c.ShouldBindJSON(&comment); err != nil {
-		log.Println(http.StatusBadRequest, helper.ErrorMessage{Message: err.Error()})
+		slog.Warn("Invalid request body", slog.String("error", err.Error()))
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})
 		return
 	}
@@ -39,11 +39,12 @@ func (h *CommentsHandler) CreateCommentsHandler(c *gin.Context) {
 
 	err = h.commentsService.CreateComments(ctx, postId, userId, comment)
 	if err != nil {
+		slog.Error("Failed to create comment", slog.String("error", err.Error()), slog.Int("postId", postId), slog.Int("userId", userId))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to create comment on post."})
 		return
 	}
 
-	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Post Created Succesfully"})
+	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Post Created Successfully"})
 }
 
 func (h *CommentsHandler) GetCommentsCollection(c *gin.Context) {
@@ -58,10 +59,12 @@ func (h *CommentsHandler) GetCommentsCollection(c *gin.Context) {
 
 	comments, err := h.commentsService.GetCommentsCollection(ctx, postId)
 	if err != nil {
+		slog.Error("Failed to retrieve comments", slog.String("error", err.Error()), slog.Int("postId", postId))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to retrieve comments on post."})
 		return
 	}
 
+	slog.Info("Comments retrieved successfully", slog.Int("postId", postId))
 	c.JSON(http.StatusOK, comments)
 }
 
@@ -73,7 +76,7 @@ func (h *CommentsHandler) UpdateCommentHandler(c *gin.Context) {
 
 	var comment models.CreateCommentRequest
 	if err := c.ShouldBindJSON(&comment); err != nil {
-		log.Println(http.StatusBadRequest, helper.ErrorMessage{Message: err.Error()})
+		slog.Warn("Invalid request body", slog.String("error", err.Error()))
 		c.JSON(http.StatusBadRequest, helper.ErrorMessage{Message: "Invalid request body. Please check your input."})
 		return
 	}
@@ -86,15 +89,16 @@ func (h *CommentsHandler) UpdateCommentHandler(c *gin.Context) {
 
 	rowsAffected, err := h.commentsService.UpdateComments(ctx, commentId, postId, userId, comment)
 	if err != nil {
+		slog.Error("Failed to update comment", slog.String("error", err.Error()), slog.Int("commentId", commentId))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to update comment."})
 		return
 	}
 	if rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, helper.ErrorMessage{Message: "Update was not succesful"})
+		c.JSON(http.StatusNotFound, helper.ErrorMessage{Message: "Update was not successful"})
 		return
 	}
 
-	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Comment updated succesfully."})
+	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Comment updated successfully."})
 }
 
 func (h *CommentsHandler) DeleteCommentHandler(c *gin.Context) {
@@ -111,6 +115,7 @@ func (h *CommentsHandler) DeleteCommentHandler(c *gin.Context) {
 
 	comments, err := h.commentsService.DeleteComments(ctx, postId, userId, commentId)
 	if err != nil {
+		slog.Error("Failed to delete comment", slog.String("error", err.Error()), slog.Int("commentId", commentId))
 		c.JSON(http.StatusInternalServerError, helper.ErrorMessage{Message: "Failed to delete comment."})
 		return
 	}
@@ -119,5 +124,5 @@ func (h *CommentsHandler) DeleteCommentHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Comment Deleted Sucesfully"})
+	c.JSON(http.StatusOK, helper.SuccessMessage{Message: "Comment Deleted Successfully"})
 }

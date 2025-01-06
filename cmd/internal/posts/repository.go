@@ -4,12 +4,11 @@ import (
 	"anon-confessions/cmd/internal/helper"
 	"anon-confessions/cmd/internal/models"
 	"context"
-	"log"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
 
-//! TODO: FIX ALL THE LOGGING AND RESPONSE HANDLING.
 
 type PostsRepository interface {
 	CreatePosts(context.Context, models.PostDBModel) error
@@ -32,6 +31,7 @@ func (repo *SQLitePostsRepository) CreatePosts(ctx context.Context, post models.
 	result := repo.db.WithContext(ctx).Create(&post)
 
 	if result.Error != nil {
+		slog.Error("Failed to create post", slog.String("error", result.Error.Error()))
 		return result.Error
 	}
 
@@ -42,7 +42,7 @@ func (repo *SQLitePostsRepository) GetPost(ctx context.Context, id int) (*models
 	var post models.GetPostWithComments
 	err := repo.db.Preload("Comments").First(&post, id).Error
 	if err != nil {
-		log.Println(err)
+		slog.Error("Failed to retrieve post", slog.Int("postId", id), slog.String("error", err.Error()))
 		return nil, err
 	}
 
@@ -69,7 +69,7 @@ func (repo *SQLitePostsRepository) GetPostsCollection(ctx context.Context, userI
 		Offset((postQueryParams.Page - 1) * postQueryParams.Limit).Scan(&postCollection)
 
 	if result.Error != nil {
-		log.Println(result.Error)
+		slog.Error("Failed to retrieve posts collection", slog.String("error", result.Error.Error()))
 		return nil, result.Error
 	}
 
@@ -84,6 +84,7 @@ func (repo *SQLitePostsRepository) UpdatePosts(ctx context.Context, id int, user
 	result := repo.db.WithContext(ctx).Model(&models.PostDBModel{}).Where("id = ? AND user_id = ?", id, userId).Update("content", post.Content)
 
 	if result.Error != nil {
+		slog.Error("Failed to update post", slog.Int("postId", id), slog.String("error", result.Error.Error()))
 		return -1, result.Error
 	}
 
@@ -94,6 +95,7 @@ func (repo *SQLitePostsRepository) DeletePost(id, userId int) (int64, error) {
 	result := repo.db.Where("id = ? AND user_id = ?", id, userId).Delete(&models.PostDBModel{})
 
 	if result.Error != nil {
+		slog.Error("Failed to delete post", slog.Int("postId", id), slog.String("error", result.Error.Error()))
 		return -1, result.Error
 	}
 
@@ -111,6 +113,7 @@ func (repo *SQLitePostsRepository) UpdateLikes(ctx context.Context, postId, user
 		if err := tx.Model(&models.PostDBModel{}).
 			Where("id = ? AND user_id = ?", postId, userId).
 			Update("total_likes", gorm.Expr("total_likes + ?", sign)).Error; err != nil {
+			slog.Error("Failed to update total likes in transaction", slog.Int("postId", postId), slog.String("error", err.Error()))
 			return err
 		}
 
@@ -124,6 +127,7 @@ func (repo *SQLitePostsRepository) UpdateLikes(ctx context.Context, postId, user
 			`
 			result := tx.Exec(rawSQL, postId, userId)
 			if result.Error != nil {
+				slog.Error("Failed to insert like in transaction", slog.Int("postId", postId), slog.Int("userId", userId), slog.String("error", result.Error.Error()))
 				return result.Error
 			}
 			rowsAffected = result.RowsAffected
@@ -132,6 +136,7 @@ func (repo *SQLitePostsRepository) UpdateLikes(ctx context.Context, postId, user
 			// it will return `rowsAffected` as 0 if no matching record exists,
 			result := tx.Where("post_id = ? AND user_id = ?", postId, userId).Delete(&models.PostsLikesDBModel{})
 			if result.Error != nil {
+				slog.Error("Failed to remove like in transaction", slog.Int("postId", postId), slog.Int("userId", userId), slog.String("error", result.Error.Error()))
 				return result.Error
 			}
 			rowsAffected = result.RowsAffected
@@ -141,6 +146,7 @@ func (repo *SQLitePostsRepository) UpdateLikes(ctx context.Context, postId, user
 	})
 
 	if err != nil {
+		slog.Error("Transaction failed for updating likes", slog.Int("postId", postId), slog.Int("userId", userId), slog.String("error", err.Error()))
 		return 0, err
 	}
 
