@@ -25,7 +25,7 @@ func Authentication(db *gorm.DB) gin.HandlerFunc {
 
 		var users []models.Users
 		if err := db.Find(&users).Error; err != nil {
-			slog.Warn("Authentication failed: Database error: %v", err)
+			slog.Warn("Authentication failed: Database error", slog.String("error", err.Error()))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
