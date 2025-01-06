@@ -4,8 +4,10 @@ import (
 	"anon-confessions/cmd/internal/models"
 	"anon-confessions/cmd/internal/websocket"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"time"
 )
 
@@ -32,7 +34,20 @@ func (s *CommentsService) CreateComments(ctx context.Context, postId, userId int
 		return err
 	}
 
-	s.hub.Broadcast <- []byte("New Comment Created")
+	// Broadcast to all connected clients
+	wsMsg := models.WebSocketMessage{
+		Type:    "newComment",
+		Message: "New comment created.",
+		Content: map[string]interface{}{
+			"postId": postId,
+		},
+	}
+
+	marshalledWSMsg, err := json.Marshal(wsMsg)
+	if err != nil {
+		slog.Warn("Failed to marshal websocket message" + string(marshalledWSMsg))
+	}
+	s.hub.Broadcast <- marshalledWSMsg
 
 	return nil
 }

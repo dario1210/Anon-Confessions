@@ -17,6 +17,7 @@ type Client struct {
 	send chan []byte
 }
 
+
 func (c *Client) writePump() {
 	defer c.conn.Close()
 	for message := range c.send {

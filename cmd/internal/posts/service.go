@@ -4,8 +4,10 @@ import (
 	"anon-confessions/cmd/internal/models"
 	"anon-confessions/cmd/internal/websocket"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"time"
 )
 
@@ -31,8 +33,16 @@ func (s *PostsService) CreatePosts(ctx context.Context, post models.PostRequest,
 		return err
 	}
 
-	// Broadcast to all connected clients
-	s.hub.Broadcast <- []byte("New Post Created")
+	wsMsg := models.WebSocketMessage{
+		Type:    "newPost",
+		Message: "New Post was created",
+	}
+
+	marshalledWSMsg, err := json.Marshal(wsMsg)
+	if err != nil {
+		slog.Warn("Failed to marshal websocket message" + string(marshalledWSMsg))
+	}
+	s.hub.Broadcast <- marshalledWSMsg
 
 	return nil
 }
@@ -92,9 +102,19 @@ func (s *PostsService) UpdateLikes(ctx context.Context, postId, userId int, post
 	}
 
 	// Broadcast to all connected clients
-	// HAVE A STRUCT THAT CONTAINS THE NUMBER OF LIKES
-	s.hub.Broadcast <- []byte("Likes Updated")
-	// S.hub.Broadcast <- string(model)
+	wsMsg := models.WebSocketMessage{
+		Type:    "updatedLikes",
+		Message: "Likes Updated",
+		Content: map[string]interface{}{
+			"postId": postId,
+		},
+	}
+
+	marshalledWSMsg, err := json.Marshal(wsMsg)
+	if err != nil {
+		slog.Warn("Failed to marshal websocket message" + string(marshalledWSMsg))
+	}
+	s.hub.Broadcast <- marshalledWSMsg
 
 	return rowsAffected, nil
 }
