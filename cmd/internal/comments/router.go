@@ -8,8 +8,8 @@ import (
 func RegisterCommentsRoutes(router *gin.RouterGroup, h *CommentsHandler) {
 	commentGroup := router.Group("/posts/:id/comments")
 	{
-		commentGroup.POST("/", h.CreateCommentsHandler)
-		commentGroup.GET("/", h.GetCommentsCollection)
+		commentGroup.POST("", h.CreateCommentsHandler)
+		commentGroup.GET("", h.GetCommentsCollection)
 		commentGroup.PATCH("/:commentId", h.UpdateCommentHandler)
 		commentGroup.DELETE("/:commentId", h.DeleteCommentHandler)
 	}

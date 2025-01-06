@@ -44,7 +44,7 @@ func (h *CommentsHandler) CreateCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Post Created Successfully"})
+	c.JSON(http.StatusCreated, helper.SuccessMessage{Message: "Comment Created Successfully"})
 }
 
 func (h *CommentsHandler) GetCommentsCollection(c *gin.Context) {

@@ -15,6 +15,7 @@ A web application for anonymous confessions, providing a platform for open and a
 - **SQLite**: Required for database operations.
 - **Migrate**: For database migrations. Install via [golang-migrate](https://pkg.go.dev/github.com/golang-migrate/migrate/v4).
 - **Make**: Often pre-installed on Linux. If not, install it using:
+
   ```bash
   sudo apt install make      # Debian/Ubuntu
   sudo yum install make      # CentOS/RHEL
@@ -42,13 +43,13 @@ go mod tidy
 
 ### 3. **Run Database Migrations**
 
-#### Using `make` (Recommended):
+#### Using `make` (Recommended)
 
 ```bash
 make migrations
 ```
 
-#### Without `make`:
+#### Without `make`
 
 ```bash
 go run cmd/internal/db/migrate/migration.go
@@ -56,13 +57,13 @@ go run cmd/internal/db/migrate/migration.go
 
 ### 4. **Run the Seeder**
 
-#### Using `make`:
+#### Using `make`
 
 ```bash
 make seed
 ```
 
-#### Without `make`:
+#### Without `make`
 
 ```bash
 go run cmd/internal/db/seeder/seeder.go
@@ -78,13 +79,13 @@ Can be used for testing the API.
 
 ### 5. **Run the Application**
 
-#### Using `make`:
+#### Using `make`
 
 ```bash
 make run
 ```
 
-#### Without `make`:
+#### Without `make`
 
 ```bash
 go run cmd/server/main.go
@@ -96,13 +97,13 @@ If you want to use Swagger UI for API documentation and testing:
 
 1. Run the following commands:
 
-#### Using `make`:
+#### Using `make`
 
 ```bash
 make swagger
 ```
 
-#### Without `make`:
+#### Without `make`
 
 ```bash
 swag init -g cmd/internal/app/app.go
