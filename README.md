@@ -1,83 +1,109 @@
 # **Project Title: Anon-Confessions**
 
-A web application for anonymous confessions. This project allows users to share their thoughts anonymously, providing a platform for open communication.
+A web application for anonymous confessions, providing a platform for open and anonymous communication.
 
 ---
 
 ## **Prerequisites**
 
-To run the project, ensure you have the following installed on your machine:
+### **Required**
 
-### **Required:**
+- **Go**: [Install Go](https://go.dev/)
 
-- **Go** [Install Go](https://go.dev/)
-
-### **Optional (For Developers):**
+### **Optional (For Developers)**
 
 - **SQLite**: Required for database operations.
-- **Migrate**: For running database migrations. Install it from [golang-migrate](https://pkg.go.dev/github.com/golang-migrate/migrate/v4).
-- **Make**: Commonly pre-installed on many Linux distributions. If not, you can install it:
+- **Migrate**: For database migrations. Install via [golang-migrate](https://pkg.go.dev/github.com/golang-migrate/migrate/v4).
+- **Make**: Often pre-installed on Linux. If not, install it using:
   ```bash
-  sudo apt install make      # For Debian/Ubuntu
-  sudo yum install make      # For CentOS/RHEL
-  sudo pacman -S make        # For Arch-based systems
+  sudo apt install make      # Debian/Ubuntu
+  sudo yum install make      # CentOS/RHEL
+  sudo pacman -S make        # Arch-based systems
   ```
 
 ---
 
-## **Installation**
+## **Installation and Setup**
 
-Follow these steps to install and set up the project:
+Follow these steps to set up and run the project:
 
-1. **Clone the Repository:**
+### 1. **Clone the Repository**
 
-   ```bash
-   git clone https://github.com/dario1210/Anon-Repository.git
-   ```
+```bash
+git clone https://github.com/dario1210/Anon-Confessions.git
+cd Anon-Confessions
+```
 
-2. **Navigate to the Project Directory:**
+### 2. **Install Dependencies**
 
-   ```bash
-   cd Anon-Repository
-   ```
+```bash
+go mod tidy
+```
 
-3. **Install Dependencies:**
+### 3. **Run Database Migrations**
 
-   ```bash
-   go mod tidy
-   ```
+#### Using `make` (Recommended):
 
-4. **Database Migrations:**
+```bash
+make migrations
+```
 
-   **Option 1 (If you have `make`):**
+#### Without `make`:
 
-   ```bash
-   make migrations
-   ```
+```bash
+go run cmd/internal/db/migrate/migration.go
+```
 
-   **Option 2 (Manual Commands):**
-   If `make` is not available on your machine, run the following command directly:
+### 4. **Run the Seeder**
 
-   ```bash
-   go run cmd/internal/db/migrate/migration.go
-   ```
+#### Using `make`:
 
-5. **Run the Application:**
+```bash
+make seed
+```
 
-   **Option 1 (If you have `make`):**
+#### Without `make`:
 
-   ```bash
-   make run
-   ```
+```bash
+go run cmd/internal/db/seeder/seeder.go
+```
 
-   **Option 2 (Manual Commands):**
+Seeder populates the database with sample authentication accounts:
+Can be used for testing the API.
 
-   ```bash
-   go run cmd/server/main.go
-   ```
+- **1234567891234567**
+- **3998442793406687**
+- **7180218105191773**
+- **6129856725721562**
 
-6. **Swagger Documentation (Optional):**
-   If you wish to generate Swagger documentation for the project:
-   ```bash
-   swag init -g cmd/server/main.go
-   ```
+### 5. **Run the Application**
+
+#### Using `make`:
+
+```bash
+make run
+```
+
+#### Without `make`:
+
+```bash
+go run cmd/server/main.go
+```
+
+### 6. **Generate Swagger Documentation** (Optional)
+
+If you want to use Swagger UI for API documentation and testing:
+
+1. Run the following commands:
+
+#### Using `make`:
+
+```bash
+make swagger
+```
+
+#### Without `make`:
+
+```bash
+	swag init -g cmd/server/main.go
+```
