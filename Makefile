@@ -8,4 +8,5 @@ run:
 	go run cmd/server/main.go
 
 swagger:
-	swag init -g cmd/server/main.go
+	swag init -g cmd/internal/app/app.go
+

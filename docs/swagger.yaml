@@ -61,7 +61,7 @@ definitions:
       accountNumber:
         type: string
     type: object
-host: localhost:9000
+host: localhost:cfg.Port
 info:
   contact: {}
   description: |-
@@ -72,9 +72,6 @@ info:
     • Receive real-time updates through WebSocket.
 
     The API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Anonymous Confessions API
   version: "1.0"
 paths:

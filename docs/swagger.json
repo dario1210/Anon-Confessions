@@ -4,13 +4,9 @@
         "description": "A privacy-focused backend service that allows users to:\n• Post and manage anonymous confessions.\n• React to posts with likes and comments.\n• Leave comments on confessions.\n• Receive real-time updates through WebSocket.\n\nThe API is designed with RESTful principles, uses SQLite for data storage, and ensures anonymity without storing personal information.",
         "title": "Anonymous Confessions API",
         "contact": {},
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
         "version": "1.0"
     },
-    "host": "localhost:9000",
+    "host": "localhost:cfg.Port",
     "basePath": "/api/v1",
     "paths": {
         "/posts": {
