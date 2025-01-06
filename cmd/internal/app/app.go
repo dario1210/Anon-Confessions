@@ -41,11 +41,6 @@ func NewApp() (*App, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	if err := db.RunMigrations(&cfg.Migrations); err != nil {
-		slog.Error("Database migrations failed", slog.String("error", err.Error()))
-		return nil, fmt.Errorf("database migrations failed: %w", err)
-	}
-
 	slog.Info("Starting WebSocket hub...")
 	hub := websocket.NewHub()
 	go hub.Run()
