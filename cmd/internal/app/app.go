@@ -1,12 +1,12 @@
 package app
 
 import (
-	"anon-confessions/cmd/internal/comments"
 	"anon-confessions/cmd/internal/config"
 	"anon-confessions/cmd/internal/db"
 	"anon-confessions/cmd/internal/middleware"
-	"anon-confessions/cmd/internal/posts"
-	"anon-confessions/cmd/internal/user"
+	"anon-confessions/cmd/internal/modules/comments"
+	"anon-confessions/cmd/internal/modules/posts"
+	"anon-confessions/cmd/internal/modules/user"
 	"anon-confessions/cmd/internal/websocket"
 	"anon-confessions/docs"
 	"fmt"

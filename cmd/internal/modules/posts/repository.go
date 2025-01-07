@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type PostsRepository interface {
 	CreatePosts(context.Context, models.PostDBModel) error
 	GetPost(context.Context, int) (*models.GetPostWithComments, error)

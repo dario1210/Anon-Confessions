@@ -3,7 +3,7 @@ package comments
 import (
 	"anon-confessions/cmd/internal/helper"
 	"anon-confessions/cmd/internal/models"
-	"anon-confessions/cmd/internal/posts"
+	"anon-confessions/cmd/internal/modules/posts"
 	"log/slog"
 	"net/http"
 

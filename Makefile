@@ -10,3 +10,8 @@ run:
 swagger:
 	swag init -g cmd/internal/app/app.go
 
+tests:
+	go test ./...
+
+tests-verbose:
+	go test -v ./...
