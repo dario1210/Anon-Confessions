@@ -77,21 +77,7 @@ Can be used for testing the API.
 - **7180218105191773**
 - **6129856725721562**
 
-### 5. **Run the Application**
-
-#### Using `make`
-
-```bash
-make run
-```
-
-#### Without `make`
-
-```bash
-go run cmd/server/main.go
-```
-
-### 6. **Generate Swagger Documentation** (Optional)
+### 5. **Generate Swagger Documentation** (Optional)
 
 If you want to use Swagger UI for API documentation and testing:
 
@@ -108,3 +94,21 @@ make swagger
 ```bash
 swag init -g cmd/internal/app/app.go
 ```
+
+### 6. **Run the Application**
+
+#### Using `make`
+
+```bash
+make run
+```
+
+#### Without `make`
+
+```bash
+go run cmd/server/main.go
+```
+
+Access the page at
+
+[`localhost:9000/swagger/index.html#/`](http://localhost:9000/swagger/index.html#/)
