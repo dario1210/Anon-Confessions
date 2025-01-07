@@ -24,6 +24,16 @@ A web application for anonymous confessions, providing a platform for open and a
 
 ---
 
+## **Run a Migration**
+
+To create a new migration file, use the following command:
+
+```bash
+migrate create -ext sql -dir ./cmd/internal/db/migrations_files/ -seq create_user_table
+```
+
+---
+
 ## **Installation and Setup**
 
 Follow these steps to set up and run the project:
@@ -57,6 +67,8 @@ go run cmd/internal/db/migrate/migration.go
 
 ### 4. **Run the Seeder**
 
+Seed the database with sample data for testing.
+
 #### Using `make`
 
 ```bash
@@ -69,8 +81,7 @@ make seed
 go run cmd/internal/db/seeder/seeder.go
 ```
 
-Seeder populates the database with sample authentication accounts:
-Can be used for testing the API.
+The seeder populates the database with sample authentication accounts, which can be used for testing the API:
 
 - **1234567891234567**
 - **3998442793406687**
@@ -79,9 +90,7 @@ Can be used for testing the API.
 
 ### 5. **Generate Swagger Documentation** (Optional)
 
-If you want to use Swagger UI for API documentation and testing:
-
-1. Run the following commands:
+To use Swagger UI for API documentation and testing, generate the Swagger docs:
 
 #### Using `make`
 
@@ -97,6 +106,8 @@ swag init -g cmd/internal/app/app.go
 
 ### 6. **Run the Application**
 
+Run the application to start the server.
+
 #### Using `make`
 
 ```bash
@@ -109,6 +120,8 @@ make run
 go run cmd/server/main.go
 ```
 
-Access the page at
+### Access the Application
 
-[`localhost:9000/swagger/index.html#/`](http://localhost:9000/swagger/index.html#/)
+Visit the following URL in your browser:
+
+[`http://localhost:9000/swagger/index.html#/`](http://localhost:9000/swagger/index.html#/)
