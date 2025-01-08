@@ -26,13 +26,13 @@ func RegisterPostRoutes(router *gin.RouterGroup, postsHandler *PostsHandler) {
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path string true "Post ID"
 // @Success 200 {object} models.GetPost "Post retrieved successfully"
 // @Failure 400 {object} helper.ErrorMessage "Invalid post ID"
-// @Failure 401 {object} helper.ErrorMessage "Invalid or missing X-Account-Number"
+// @Failure 401 {object} helper.ErrorMessage "Missing or invalid X-Account-Number"
 // @Failure 500 {object} helper.ErrorMessage "Failed to retrieve post"
 // @Router /posts/{id} [get]
+// @security AccountNumberAuth
 func getPostsHandler(c *gin.Context) {}
 
 // CreatePostHandler handles the creation of a new post.
@@ -41,13 +41,13 @@ func getPostsHandler(c *gin.Context) {}
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param post body models.PostRequest true "Post content"
 // @Success 201 {object} helper.SuccessMessage "Post created successfully"
 // @Failure 400 {object} helper.ErrorMessage "Invalid request body"
 // @Failure 401 {object} helper.ErrorMessage "Invalid or missing X-Account-Number"
 // @Failure 500 {object} helper.ErrorMessage "Internal server error"
 // @Router /posts [post]
+// @security AccountNumberAuth
 func createPostHandler(c *gin.Context) {}
 
 // GetPostsCollectionHandler handles retrieving a collection of posts.
@@ -56,7 +56,6 @@ func createPostHandler(c *gin.Context) {}
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param page query int false "Page number (default: 1)" minimum(1) default(1)
 // @Param limit query int false "Number of items per page (default: 10)" minimum(1) default(10)
 // @Param creation_date query string false "Sort by creation date (asc or desc)" Enums(asc,desc) default()
@@ -65,6 +64,7 @@ func createPostHandler(c *gin.Context) {}
 // @Success 200 {object} map[string]interface{} "{} if no posts are found"
 // @Failure 500 {object} helper.ErrorMessage "Failed to retrieve posts"
 // @Router /posts [get]
+// @security AccountNumberAuth
 func (h *PostsHandler) getPostsCollectionHandler(c *gin.Context) {}
 
 // DeletePostsHandler handles deleting a post by its ID.
@@ -73,13 +73,13 @@ func (h *PostsHandler) getPostsCollectionHandler(c *gin.Context) {}
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
 // @Success 200 {object} helper.SuccessMessage "Post deleted successfully"
 // @Failure 400 {object} helper.ErrorMessage "Invalid post ID"
 // @Failure 401 {object} helper.ErrorMessage "Unauthorized user or missing X-Account-Number"
 // @Failure 500 {object} helper.ErrorMessage "Failed to delete post"
 // @Router /posts/{id} [delete]
+// @security AccountNumberAuth
 func (h *PostsHandler) deletePostsHandler(c *gin.Context) {}
 
 // UpdatePostsHandler handles updating a post by its ID.
@@ -88,7 +88,6 @@ func (h *PostsHandler) deletePostsHandler(c *gin.Context) {}
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
 // @Param post body models.PostRequest true "Post content"
 // @Success 200 {object} helper.SuccessMessage "Updated successfully"
@@ -96,6 +95,7 @@ func (h *PostsHandler) deletePostsHandler(c *gin.Context) {}
 // @Failure 404 {object} helper.ErrorMessage "Post not found or no updates applied"
 // @Failure 500 {object} helper.ErrorMessage "Failed to update post"
 // @Router /posts/{id} [patch]
+// @security AccountNumberAuth
 func (h *PostsHandler) updatePostsHandler(c *gin.Context) {}
 
 // UpdateLikesHandler handles liking or unliking a post by a user.
@@ -104,7 +104,6 @@ func (h *PostsHandler) updatePostsHandler(c *gin.Context) {}
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
 // @Param body body models.UpdateLikesRequest true "Action to like or unlike the post"
 // @Success 200 {object} helper.SuccessMessage "Action applied successfully"
@@ -112,4 +111,5 @@ func (h *PostsHandler) updatePostsHandler(c *gin.Context) {}
 // @Failure 404 {object} helper.ErrorMessage "Post not found or action not applied"
 // @Failure 500 {object} helper.ErrorMessage "Failed to apply action on the post"
 // @Router /posts/{id}/likes [patch]
+// @security AccountNumberAuth
 func (h *PostsHandler) updateLikesHandler(c *gin.Context) {}

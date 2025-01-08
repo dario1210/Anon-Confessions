@@ -23,7 +23,6 @@ func RegisterCommentsRoutes(router *gin.RouterGroup, h *CommentsHandler) {
 // @Tags comments
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
 // @Param comment body models.CreateCommentRequest true "Comment content"
 // @Success 201 {object} helper.SuccessMessage "Comment created successfully"
@@ -32,6 +31,7 @@ func RegisterCommentsRoutes(router *gin.RouterGroup, h *CommentsHandler) {
 // @Failure 404 {object} helper.ErrorMessage "Post not found"
 // @Failure 500 {object} helper.ErrorMessage "Internal server error"
 // @Router /posts/{id}/comments [post]
+// @security AccountNumberAuth
 func (h *CommentsHandler) createCommentsHandler(c *gin.Context) {}
 
 // GetCommentsCollection retrieves a collection of comments for a specific post.
@@ -40,11 +40,11 @@ func (h *CommentsHandler) createCommentsHandler(c *gin.Context) {}
 // @Tags comments
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
 // @Success 200 {object} models.GetCommentsCollection "Comments retrieved successfully"
 // @Failure 500 {object} helper.ErrorMessage "Failed to retrieve comments"
 // @Router /posts/{id}/comments [get]
+// @security AccountNumberAuth
 func (h *CommentsHandler) getCommentsCollection(c *gin.Context) {}
 
 // @Summary Update a comment
@@ -52,7 +52,6 @@ func (h *CommentsHandler) getCommentsCollection(c *gin.Context) {}
 // @Tags comments
 // @Accept json
 // @Produce json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param id path int true "Post ID"
 // @Param commentId path int true "Comment ID"
 // @Param body body models.CreateCommentRequest true "Updated comment content"
@@ -62,6 +61,7 @@ func (h *CommentsHandler) getCommentsCollection(c *gin.Context) {}
 // @Failure 404 {object} helper.ErrorMessage "Post or comment not found"
 // @Failure 500 {object} helper.ErrorMessage "Failed to update comment"
 // @Router /posts/{id}/comments/{commentId} [patch]
+// @security AccountNumberAuth
 func (h *CommentsHandler) updateCommentsHandler(c *gin.Context) {}
 
 // @Summary      Delete a comment
@@ -69,7 +69,6 @@ func (h *CommentsHandler) updateCommentsHandler(c *gin.Context) {}
 // @Tags         comments
 // @Accept       json
 // @Produce      json
-// @Param X-Account-Number header string true "16-digit account number (e.g., 1234567890123456)"
 // @Param        id          path      int  true  "Post ID"
 // @Param        commentId   path      int  true  "Comment ID"
 // @Success      200 {object} helper.SuccessMessage "Comment deleted successfully"
@@ -77,4 +76,5 @@ func (h *CommentsHandler) updateCommentsHandler(c *gin.Context) {}
 // @Failure      404 {object} helper.ErrorMessage   "Post not found or comment not found"
 // @Failure      500 {object} helper.ErrorMessage   "Failed to delete comment"
 // @Router       /posts/{id}/comments/{commentId} [delete]
+// @security AccountNumberAuth
 func (h *CommentsHandler) deleteComment(c *gin.Context) {}

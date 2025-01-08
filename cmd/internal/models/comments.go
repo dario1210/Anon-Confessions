@@ -18,7 +18,7 @@ type CreateCommentRequest struct {
 }
 
 // Comments represents a lightweight structure for comments.
-// Used for collections 
+// Used for collections
 type Comments struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -32,7 +32,7 @@ type Comment struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-type GetCommentsCollection []Comments
+type GetCommentsCollection []Comment
 
 // TableName overrides the default table name for GORM for CommentsDbModel.
 func (CommentsDbModel) TableName() string {

@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/posts": {
             "get": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Fetches a collection of posts. Requires authentication using X-Account-Number.                           If both sorting options are provided, priority will be given to the SortByCreationDate field.",
                 "consumes": [
                     "application/json"
@@ -29,13 +34,6 @@ const docTemplate = `{
                 ],
                 "summary": "Retrieve a collection of posts",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -92,6 +90,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Allows authenticated users to create a new post using their X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -104,13 +107,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new post",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "Post content",
                         "name": "post",
@@ -151,6 +147,11 @@ const docTemplate = `{
         },
         "/posts/{id}": {
             "get": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Fetches a post using its unique ID. Requires authentication using X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -163,13 +164,6 @@ const docTemplate = `{
                 ],
                 "summary": "Retrieve a post",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Post ID",
@@ -192,7 +186,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Invalid or missing X-Account-Number",
+                        "description": "Missing or invalid X-Account-Number",
                         "schema": {
                             "$ref": "#/definitions/helper.ErrorMessage"
                         }
@@ -206,6 +200,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Deletes a post using its unique ID. Requires the user to be logged in and authenticated using X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -218,13 +217,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete a post",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Post ID",
@@ -261,6 +253,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Updates a post's content. Requires the user to be authenticated using X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -273,13 +270,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update a post",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Post ID",
@@ -327,6 +317,11 @@ const docTemplate = `{
         },
         "/posts/{id}/comments": {
             "get": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Fetches all comments associated with a specific post ID. Requires authentication using X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -339,13 +334,6 @@ const docTemplate = `{
                 ],
                 "summary": "Retrieve comments for a post",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Post ID",
@@ -360,7 +348,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Comments"
+                                "$ref": "#/definitions/models.Comment"
                             }
                         }
                     },
@@ -373,6 +361,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Allows authenticated users to add a comment to a specific post. Requires authentication using X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -385,13 +378,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create a comment",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Post ID",
@@ -445,6 +431,11 @@ const docTemplate = `{
         },
         "/posts/{id}/comments/{commentId}": {
             "delete": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Deletes a specific comment from a post. The user must be authenticated and authorized to delete the comment.",
                 "consumes": [
                     "application/json"
@@ -457,13 +448,6 @@ const docTemplate = `{
                 ],
                 "summary": "Delete a comment",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Post ID",
@@ -507,6 +491,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Updates the content of a specific comment in a post. Requires authentication using X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -519,13 +508,6 @@ const docTemplate = `{
                 ],
                 "summary": "Update a comment",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Post ID",
@@ -586,6 +568,11 @@ const docTemplate = `{
         },
         "/posts/{id}/likes": {
             "patch": {
+                "security": [
+                    {
+                        "AccountNumberAuth": []
+                    }
+                ],
                 "description": "Updates the like status of a post. Requires the user to be authenticated using X-Account-Number.",
                 "consumes": [
                     "application/json"
@@ -598,13 +585,6 @@ const docTemplate = `{
                 ],
                 "summary": "Like or Unlike a post",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "16-digit account number (e.g., 1234567890123456)",
-                        "name": "X-Account-Number",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "Post ID",
@@ -691,7 +671,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Comments": {
+        "models.Comment": {
             "type": "object",
             "properties": {
                 "content": {
@@ -699,6 +679,12 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "postId": {
+                    "type": "integer"
                 }
             }
         },

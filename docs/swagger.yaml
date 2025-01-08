@@ -10,12 +10,16 @@ definitions:
       msg:
         type: string
     type: object
-  models.Comments:
+  models.Comment:
     properties:
       content:
         type: string
       createdAt:
         type: string
+      id:
+        type: integer
+      postId:
+        type: integer
     type: object
   models.CreateCommentRequest:
     properties:
@@ -83,11 +87,6 @@ paths:
         both sorting options are provided, priority will be given to the SortByCreationDate
         field.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - default: 1
         description: 'Page number (default: 1)'
         in: query
@@ -128,6 +127,8 @@ paths:
           description: Failed to retrieve posts
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Retrieve a collection of posts
       tags:
       - posts
@@ -136,11 +137,6 @@ paths:
       - application/json
       description: Allows authenticated users to create a new post using their X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post content
         in: body
         name: post
@@ -166,6 +162,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Create a new post
       tags:
       - posts
@@ -176,11 +174,6 @@ paths:
       description: Deletes a post using its unique ID. Requires the user to be logged
         in and authenticated using X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -205,6 +198,8 @@ paths:
           description: Failed to delete post
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Delete a post
       tags:
       - posts
@@ -214,11 +209,6 @@ paths:
       description: Fetches a post using its unique ID. Requires authentication using
         X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -236,13 +226,15 @@ paths:
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
         "401":
-          description: Invalid or missing X-Account-Number
+          description: Missing or invalid X-Account-Number
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
         "500":
           description: Failed to retrieve post
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Retrieve a post
       tags:
       - posts
@@ -252,11 +244,6 @@ paths:
       description: Updates a post's content. Requires the user to be authenticated
         using X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -287,6 +274,8 @@ paths:
           description: Failed to update post
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Update a post
       tags:
       - posts
@@ -297,11 +286,6 @@ paths:
       description: Fetches all comments associated with a specific post ID. Requires
         authentication using X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -314,12 +298,14 @@ paths:
           description: Comments retrieved successfully
           schema:
             items:
-              $ref: '#/definitions/models.Comments'
+              $ref: '#/definitions/models.Comment'
             type: array
         "500":
           description: Failed to retrieve comments
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Retrieve comments for a post
       tags:
       - comments
@@ -329,11 +315,6 @@ paths:
       description: Allows authenticated users to add a comment to a specific post.
         Requires authentication using X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -368,6 +349,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Create a comment
       tags:
       - comments
@@ -378,11 +361,6 @@ paths:
       description: Deletes a specific comment from a post. The user must be authenticated
         and authorized to delete the comment.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -412,6 +390,8 @@ paths:
           description: Failed to delete comment
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Delete a comment
       tags:
       - comments
@@ -421,11 +401,6 @@ paths:
       description: Updates the content of a specific comment in a post. Requires authentication
         using X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -465,6 +440,8 @@ paths:
           description: Failed to update comment
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Update a comment
       tags:
       - comments
@@ -475,11 +452,6 @@ paths:
       description: Updates the like status of a post. Requires the user to be authenticated
         using X-Account-Number.
       parameters:
-      - description: 16-digit account number (e.g., 1234567890123456)
-        in: header
-        name: X-Account-Number
-        required: true
-        type: string
       - description: Post ID
         in: path
         name: id
@@ -510,6 +482,8 @@ paths:
           description: Failed to apply action on the post
           schema:
             $ref: '#/definitions/helper.ErrorMessage'
+      security:
+      - AccountNumberAuth: []
       summary: Like or Unlike a post
       tags:
       - posts

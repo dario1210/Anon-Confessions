@@ -42,11 +42,13 @@ type HandlerContainer struct {
 
 // @host            localhost: cfg.Port
 // @BasePath        /api/v1
-
+//
 // @securityDefinitions.apikey AccountNumberAuth
-// @in header
-// @name X-Account-Number
-// @description A unique account number for user authentication.
+// @in               header
+// @name             X-Account-Number
+// @description      A unique account number for user authentication.
+//
+// @security         AccountNumberAuth
 func swaggerInfo() {}
 
 // NewApp initializes the application by loading configuration, setting up database connection, running migrations, and initializing services and handlers.
