@@ -22,7 +22,7 @@ type Config struct {
 }
 
 var (
-	defaultFileName       = "anon_confessions142.db?_foreign_keys=1"
+	defaultFileName       = "anon_confessions.db?_foreign_keys=1"
 	defaultDBURL          = "sqlite3://" + defaultFileName
 	defaultMigrationsPath = "file://./cmd/internal/db/migrations_files"
 	defaultPort           = "9000"
