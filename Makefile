@@ -1,4 +1,4 @@
-migration:
+migrations:
 	go run cmd/internal/db/migrate/migration.go
 
 seed:
