@@ -4,8 +4,6 @@ import (
 	"anon-confessions/cmd/internal/app"
 	"anon-confessions/cmd/internal/config"
 	"log/slog"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
