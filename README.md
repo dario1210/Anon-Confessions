@@ -94,6 +94,8 @@ make migrations
 go run cmd/internal/db/migrate/migration.go
 ```
 
+> `The migrations can take a while to run depending on the machine`
+
 ### 4. **Run the Seeder**
 
 Seed the database with sample data for testing.
