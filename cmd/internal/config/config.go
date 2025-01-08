@@ -21,18 +21,26 @@ type Config struct {
 	Migrations Migrations
 }
 
+var (
+	defaultFileName       = "anon_confessions142.db?_foreign_keys=1"
+	defaultDBURL          = "sqlite3://" + defaultFileName
+	defaultMigrationsPath = "file://./cmd/internal/db/migrations_files"
+	defaultPort           = "9000"
+)
+
 // LoadConfig loads the application configuration from environment variables.
 // It initializes default values for configuration parameters if they are not
 // present in the environment.
 func LoadConfig() *Config {
+
 	cfg := &Config{
-		Port: getEnv("PORT", "9000"),
+		Port: getEnv("PORT", defaultPort),
 		DB: SQLiteConfig{
-			File: getEnv("DB_FILE", "anon_confessions.db"),
+			File: getEnv("DB_FILE", defaultFileName),
 		},
 		Migrations: Migrations{
-			MigrationPath: getEnv("MIGRATIONS_PATH", "file://./cmd/internal/db/migrations_files"),
-			DBURL:         getEnv("DB_URL", "sqlite3://anon_confessions.db"),
+			MigrationPath: getEnv("MIGRATIONS_PATH", defaultMigrationsPath),
+			DBURL:         getEnv("DB_URL", defaultDBURL),
 		},
 	}
 

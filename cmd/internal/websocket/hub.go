@@ -15,6 +15,7 @@ type Hub struct {
 	// Unregister requests from clients.
 	Unregister chan *Client
 
+	// Mutex for concurrency
 	mu sync.Mutex
 }
 
